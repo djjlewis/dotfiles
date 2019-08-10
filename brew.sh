@@ -37,7 +37,6 @@ brew install tmux
 brew install tree
 brew install unrar
 brew install vim
-brew install macvim
 
 # development
 brew install git
