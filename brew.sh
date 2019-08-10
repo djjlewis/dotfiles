@@ -44,17 +44,18 @@ brew install git
 brew install node
 brew install python3
 brew install azure-cli
-brew install mssql-tools
+brew install dotnet-sdk
 brew install vsts-cli
 brew install yarn
 
 # New / experimental
 brew install tig
 
-# OSX native apps
-brew tap caskroom/cask
+# MSSQL Tools
+brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
+HOMEBREW_NO_ENV_FILTERING=1 ACCEPT_EULA=y brew install mssql-tools
 
-# OSX native apps
+# Casks
 brew tap caskroom/cask
 brew tap caskroom/fonts 
 
