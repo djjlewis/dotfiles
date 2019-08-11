@@ -1,27 +1,19 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-# Abort on error
-set -e
-
-echo "Checking if Homebrew is already installed..."; 
-
-# Checks if Homebrew is installed
-# Credit: https://gist.github.com/codeinthehole/26b37efa67041e1307db
+# Check for Homebrew,
+# Install if we don't have it
 if test ! $(which brew); then
-  echo "Installing Homebrew...";
-  yes | /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" &> /dev/null
-else
-  echo "Homebrew is already installed...";
+    echo "Installing homebrew..."
+      ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 fi
-
-echo "Updating and upgrading Homebrew..."; echo;
-
-yes | brew update &> /dev/null
-yes | brew upgrade &> /dev/null
+# Update homebrew recipes
+brew update
 
 # Core utils / GNU
 brew install coreutils
 brew install findutils
+brew install bash
 brew install gawk
 brew install grep
 brew install gnu-sed
@@ -43,7 +35,6 @@ brew install git
 brew install node
 brew install python3
 brew install azure-cli
-brew install dotnet-sdk
 brew install vsts-cli
 brew install yarn
 
@@ -52,67 +43,67 @@ brew install tig
 
 # MSSQL Tools
 brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
-HOMEBREW_NO_ENV_FILTERING=1 ACCEPT_EULA=y brew install mssql-tools
+brew update
+brew install mssql-tools
 
 # Casks
 brew tap caskroom/cask
 brew tap caskroom/fonts 
-
-function installcask() {
-    brew cask install "${@}" 2> /dev/null
-}
+brew tap homebrew/cask-versions  # For Java 8
 
 # fonts
-installcask font-hack-nerd-font-mono
-installcask font-hack-nerd-font
-installcask font-firacode-nerd-font-mono
-installcask font-firacode-nerd-font
-installcask font-inconsolate-nerd-font-mono
-installcask font-inconsolate-nerd-font
-installcask font-meslo-nerd-font-mono
-installcask font-meslo-nerd-font
-installcask font-sourcecodepro-nerd-font-mono
-installcask font-sourcecodepro-nerd-font
+brew cask install font-hack-nerd-font-mono
+brew cask install font-hack-nerd-font
+brew cask install font-firacode-nerd-font-mono
+brew cask install font-firacode-nerd-font
+brew cask install font-inconsolata-nerd-font-mono
+brew cask install font-inconsolata-nerd-font
+brew cask install font-meslo-nerd-font-mono
+brew cask install font-meslo-nerd-font
+brew cask install font-sourcecodepro-nerd-font-mono
+brew cask install font-sourcecodepro-nerd-font
 
 # dev-related programs
-installcask adoptopenjdk
-installcask atom
-installcask docker
-installcask gitkraken
-installcask dotnet-sdk
-installcask diffmerge
-installcask dropbox
-installcask firefox
-installcask firefox-developer-edition
-installcask google-chrome
-installcask iterm2
-#installcask java
-installcask jetbrains-toolbox
-installcask postman
-installcask sublime-merge
-installcask sourcetree
-installcask onedrive
-installcask visual-studio-code
+brew cask install adoptopenjdk
+brew cask install atom
+brew cask install docker
+brew cask install gitkraken
+brew cask install dotnet-sdk
+brew cask install diffmerge
+brew cask install dropbox
+brew cask install firefox
+brew cask install firefox-developer-edition
+brew cask install google-chrome
+brew cask install iterm2
+#brew cask install java
+brew cask install jetbrains-toolbox
+brew cask install postman
+brew cask install sublime-merge
+brew cask install sourcetree
+brew cask install onedrive
+brew cask install visual-studio-code
 
 # Productivity
-installcask 1password
-installcask appcleaner
-installcask bitwarden
-installcask bitwarden-cli
-installcask caffeine
-installcask coconutbattery
-installcask discord
-installcask macdown
-installcask microsoft-office
-installcask slack
-installcask skype
-installcask spotify
-installcask whatsapp
-installcask vlc
+brew cask install 1password
+brew cask install appcleaner
+brew cask install bitwarden
+brew cask install caffeine
+brew cask install coconutbattery
+brew cask install discord
+brew cask install macdown
+brew cask install microsoft-office
+brew cask install slack
+brew cask install skype
+brew cask install spotify
+brew cask install whatsapp
+brew cask install vlc
 
-install cask steam
+# Games
+brew cask install dosbox
+brew cask install steam
+brew cask install gog-galaxy
 
 # New / experimental
-#installcask background-music
-#installcask minikube
+#brew cask install background-music
+#brew cask install minikube
 
