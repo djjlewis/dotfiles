@@ -4,8 +4,7 @@ main() {
     # First things first, asking for sudo credentials
     ask_for_sudo
     # Installing Homebrew, the basis of anything and everything
-    #:w
-    qinstall_homebrew
+    install_homebrew
     # Cloning Dotfiles repository for install_packages_with_brewfile to have access to Brewfile
     clone_dotfiles_repo
     # Installing all packages in Dotfiles repository's Brewfile
