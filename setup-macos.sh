@@ -19,8 +19,6 @@ main() {
     update_hosts_file
     # Setting up macOS defaults
     setup_macOS_defaults
-    # Updating login items
-    update_login_items
 }
 
 DOTFILES_REPO=~/projects/dotfiles
