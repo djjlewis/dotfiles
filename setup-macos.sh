@@ -10,19 +10,17 @@ main() {
     # Installing all packages in Dotfiles repository's Brewfile
     install_packages_with_brewfile
     # Installing pip packages so that setup_symlinks can setup the symlinks
-#    install_pip_packages
-#    # Setting up symlinks so that setup_vim can install all plugins
-#    setup_symlinks
-#    # Setting up Vim
-#    setup_vim
-#    # Setting up tmux
-#    setup_tmux
-#    # Update /etc/hosts
-#    update_hosts_file
-#    # Setting up macOS defaults
-#    setup_macOS_defaults
-#    # Updating login items
-#    update_login_items
+    install_pip_packages
+    # Setting up symlinks so that setup_vim can install all plugins
+    setup_symlinks
+    # Setting up tmux
+    setup_tmux
+    # Update /etc/hosts
+    update_hosts_file
+    # Setting up macOS defaults
+    setup_macOS_defaults
+    # Updating login items
+    update_login_items
 }
 
 DOTFILES_REPO=~/projects/dotfiles
@@ -120,32 +118,6 @@ function pull_latest() {
     fi
 }
 
-function setup_vim() {
-    info "Setting up vim"
-    substep "Installing Vundle"
-    if test -e ~/.vim/bundle/Vundle.vim; then
-        substep "Vundle already exists"
-        pull_latest ~/.vim/bundle/Vundle.vim
-        substep "Pull successful in Vundle's repository"
-    else
-        url=https://github.com/VundleVim/Vundle.vim.git
-        if git clone "$url" ~/.vim/bundle/Vundle.vim; then
-            substep "Vundle installation succeeded"
-        else
-            error "Vundle installation failed"
-            exit 1
-        fi
-    fi
-    substep "Installing all plugins"
-    if vim +PluginInstall +qall 2> /dev/null; then
-        substep "Plugins installations succeeded"
-    else
-        error "Plugins installations failed"
-        exit 1
-    fi
-    success "vim successfully setup"
-}
-
 function setup_tmux() {
     info "Setting up tmux"
     substep "Installing tpm"
@@ -182,6 +154,7 @@ function setup_symlinks() {
     POWERLINE_ROOT_REPO=/usr/local/lib/python3.7/site-packages
 
     info "Setting up symlinks"
+    symlink "bash" ${DOTFILES_REPO}/bash/bash_profile ~/.bash_profile
     symlink "git" ${DOTFILES_REPO}/git/gitconfig ~/.gitconfig
     symlink "powerline" ${DOTFILES_REPO}/powerline ${POWERLINE_ROOT_REPO}/powerline/config_files
     symlink "tmux" ${DOTFILES_REPO}/tmux/tmux.conf ~/.tmux.conf
@@ -259,17 +232,6 @@ function setup_macOS_defaults() {
     else
         cd $current_dir
         error "macOS defaults update failed"
-        exit 1
-    fi
-}
-
-function update_login_items() {
-    info "Updating login items"
-
-    if osascript ${DOTFILES_REPO}/macOS/login_items.applescript &> /dev/null; then
-        success "Login items updated successfully "
-    else
-        error "Login items update failed"
         exit 1
     fi
 }

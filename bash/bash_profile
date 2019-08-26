@@ -1,0 +1,47 @@
+set -o vi
+
+# Useful Environment Variable
+
+export CLICOLOR=1
+#export PS1="\[\033[36m\]\u\[\033[m\]@\[\033[32m\]\h:\[\033[33;1m\]\w\[\033[m\]\$ "
+#export LSCOLORS=ExFxBxCxegedabagacad
+export LSCOLORS=gxfxbEaEBxxEhEhBaDaCaD
+
+export EDITOR='/Applications/MacVim.App/Contents/bin/vim'
+export EDITOR='/usr/local/bin/vim'
+
+export MYVIMRC=~/.vimrc
+export VIMCONFIG=~/.vim
+export VIMDATA=~/.vim
+export FZF_DEFAULT_COMMAND='git ls-files'
+
+export stdev=~/development/studytravel
+export STENV=dev
+export STAZRG=preprod
+
+export ANDROID_SDK="/Users/dan/Library/Android/sdk"
+
+export PATH="/Users/dan/Library/Android/sdk/platform-tools:$PATH"
+export PATH="/Users/dan/bin:/usr/local/sbin:$PATH:$VIMCONFIG/pack/bundle/start/fzf/bin:$HOME/Library/Python/2.7/bin"
+export PATH="/usr/local/opt/ruby/bin:$HOME/.gem/ruby/2.6.0/bin:$PATH"
+
+# Aliases
+
+alias ll='ls -FGhl'
+alias ls='ls -FG'
+
+#eval $(/usr/libexec/path_helper -s)
+#if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
+#if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
+
+# Powerline Prompt
+
+powerline-daemon -q
+POWERLINE_BASH_CONTINUATION=1
+POWERLINE_BASH_SELECT=1
+. /Users/dan/Library/Python/2.7/lib/python/site-packages/powerline/bindings/bash/powerline.sh
+
+# Setting PATH for Python 3.7
+# The original version is saved in .bash_profile.pysave
+PATH="/Library/Frameworks/Python.framework/Versions/3.7/bin:${PATH}"
+export PATH
