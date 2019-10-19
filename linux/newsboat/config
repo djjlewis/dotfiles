@@ -1,0 +1,31 @@
+browser firefox
+player "mpv"
+
+download-path "~/Downloads/%h/%n"
+download-filename-format "%F-%t.%e"
+
+external-url-viewer "urlview"
+
+bind-key j down
+bind-key k up
+bind-key j next articlelist
+bind-key k prev articlelist
+bind-key J next-feed articlelist
+bind-key K prev-feed articlelist
+bind-key G end
+bind-key g home
+bind-key d pagedown
+bind-key u pageup
+bind-key l open
+bind-key h quit
+bind-key n next-unread
+bind-key N prev-unread
+
+bind-key D pb-download
+bind-key x pb-delete
+
+bind-key a toggle-article-read
+bind-key U show-urls
+
+#macro , open-in-browser
+macro v set browser "mpv %u"; open-in-browser ; set browser "firefox %u"

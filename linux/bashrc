@@ -1,5 +1,6 @@
 set -o vi
 export EDITOR='/usr/bin/vim'
+export BROWSER='firefox'
 export MYVIMRC=~/.vimrc
 export VIMCONFIG=~/.vim
 export VIMDATA=~/.vim

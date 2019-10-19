@@ -1,21 +1,13 @@
-# This is Git's per-user configuration file.
 [user]
-# Please adapt and uncomment the following lines:
-	name = Daniel Lewis
-	email = dan.lewis@outlook.com
-[color]
-	ui = true
+	email = dan@daniellewis.dev
+	name = Dan Lewis
+[core]
+	editor = vim
+	autocrlf = input
+[diff]
+	tool = vimdiff
 [alias]
 	co = checkout
+	st = status
 	br = branch
 	ci = commit
-	st = status
-[core]
-	autocrlf = input
-	excludesfile = /Users/dan/.gitignore_global
-[difftool "sourcetree"]
-	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-	path = 
-[mergetool "sourcetree"]
-	cmd = /Applications/Sourcetree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
-	trustExitCode = true

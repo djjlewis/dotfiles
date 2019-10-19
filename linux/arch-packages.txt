@@ -1,0 +1,11 @@
+vim
+htop
+open-ssh
+pulseaudio
+pamixer
+compton
+feh
+firefox
+mpv
+newsboat
+youtube-dl

@@ -44,3 +44,21 @@ call plug#end()
 
 set rtp+=$HOME/Library/Python/2.7/lib/python/site-packages/powerline/bindings/vim
 set laststatus=2
+
+" Try out config
+
+" Enable folding
+set foldmethod=indent
+set foldlevel=99
+set omnifunc=syntaxcomplete#Complete
+
+au FileType py
+    \ set tabstop=4
+    \ set softtabstop=4
+    \ set shiftwidth=4
+    \ set textwidth=79
+    \ set expandtab
+    \ set autoindent
+    \ set fileformat=unix
+
+autocmd Filetype python nnoremap <buffer> <F5> :w<CR>:term python3 "%"<CR>
