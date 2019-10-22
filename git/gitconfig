@@ -4,6 +4,7 @@
 [core]
 	editor = vim
 	autocrlf = input
+	excludefiles = ~/.gitignore_global
 [diff]
 	tool = vimdiff
 [alias]
