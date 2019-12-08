@@ -11,3 +11,5 @@
 	st = status
 	br = branch
 	ci = commit
+[merge]
+	tool = vimdiff

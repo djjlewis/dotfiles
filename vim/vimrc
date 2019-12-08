@@ -15,6 +15,7 @@ set number
 set ruler
 set nowrap
 " set cindent
+
 set autoindent
 set shiftwidth=4
 set softtabstop=4
@@ -52,13 +53,12 @@ set foldmethod=indent
 set foldlevel=99
 set omnifunc=syntaxcomplete#Complete
 
-au FileType py
-    \ set tabstop=4
-    \ set softtabstop=4
-    \ set shiftwidth=4
-    \ set textwidth=79
-    \ set expandtab
-    \ set autoindent
-    \ set fileformat=unix
+au FileType python set tabstop=4 
+	\ | set softtabstop=4 
+	\ | set shiftwidth=4 
+	\ | set textwidth=79 
+	\ | set expandtab 
+	\ | set autoindent 
+	\ | set fileformat=unix
 
 autocmd Filetype python nnoremap <buffer> <F5> :w<CR>:term python3 "%"<CR>
