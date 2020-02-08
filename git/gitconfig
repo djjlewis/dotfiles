@@ -21,3 +21,5 @@
 
 [color]
 	status = always
+[merge]
+	tool = vimdiff

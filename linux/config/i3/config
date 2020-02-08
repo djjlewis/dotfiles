@@ -10,7 +10,7 @@ exec_always --no-startup-id "sleep 2;feh --randomize --bg-scale ~/wallpaper/land
 bindsym $mod+plus exec --no-startup-id pamixer -i 5
 bindsym $mod+minus exec --no-startup-id pamixer -d 5
 
-for_window [class="^.*"] border pixel 1
+for_window [class="^.*"] border pixel 2
 gaps inner 15
 gaps outer 15
 
