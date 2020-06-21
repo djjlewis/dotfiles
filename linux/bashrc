@@ -1,12 +1,34 @@
 set -o vi
-export EDITOR='/usr/bin/vim'
-export BROWSER='firefox'
-export MYVIMRC=~/.vimrc
-export VIMCONFIG=~/.vim
-export VIMDATA=~/.vim
-export FZF_DEFAULT_COMMAND='git ls-files'
-# Aliases
+set -o noclobber
+
+#export FZF_DEFAULT_COMMAND='git ls-files'
+#export FZF_DEFAULT_COMMAND='rg --files --hidden'
+export FZF_DEFAULT_COMMAND='rg --files'
+
+alias plz='sudo'
+alias diff='diff --color=auto'
+alias grep='grep --color=auto'
+alias ip='ip -color=auto'
 alias ll='ls -FGhl --color=auto --group-directories-first'
-alias ls='ls -FG --color=auto --group-directories-first'
-clear
-screenfetch 2> /dev/null
+alias ls='ls -F --color=auto --group-directories-first'
+alias vim=nvim
+
+# Set LESS env vars for coloured output in man pages
+man() {
+    LESS=-r				\
+    LESS=-r				\
+    LESS_TERMCAP_mb=$'\e[01;30m' 	\
+    LESS_TERMCAP_md=$'\e[01;36m'	\
+    LESS_TERMCAP_me=$'\e[0m'		\
+    LESS_TERMCAP_se=$'\e[0m' 		\
+    LESS_TERMCAP_so=$'\e[01;47;30m' 	\
+    LESS_TERMCAP_ue=$'\e[0m'		\
+    LESS_TERMCAP_us=$'\e[04;35m'	\
+    command man "$@"
+}
+
+# Run twolfson/sexy-bash-prompt
+# TODO: find something less bloated
+. ~/.bash_prompt
+
+neofetch --cpu_temp C 2> /dev/null

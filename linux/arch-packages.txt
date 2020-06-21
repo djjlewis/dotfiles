@@ -1,4 +1,7 @@
 vim
+dmenu
+rxvt-unicode
+tmux
 htop
 open-ssh
 pulseaudio
