@@ -1,24 +1,14 @@
 #!/usr/bin/env bash
 
 main() {
-    # First things first, asking for sudo credentials
     ask_for_sudo
-    # Installing Homebrew, the basis of anything and everything
     install_homebrew
-    # Cloning Dotfiles repository for install_packages_with_brewfile to have access to Brewfile
     clone_dotfiles_repo
-    # Installing all packages in Dotfiles repository's Brewfile
     install_packages_with_brewfile
-    # Installing pip packages so that setup_symlinks can setup the symlinks
-    install_pip_packages
-    # Setting up symlinks so that setup_vim can install all plugins
     setup_symlinks
-    # Setting up tmux
     setup_tmux
-    # Update /etc/hosts
     update_hosts_file
-    # Setting up macOS defaults
-    setup_macOS_defaults
+    #setup_macOS_defaults
 }
 
 DOTFILES_REPO=~/projects/dotfiles
@@ -38,11 +28,12 @@ function ask_for_sudo() {
 
 function install_homebrew() {
     info "Installing Homebrew"
-    if hash brew 2>/dev/null; then
-        success "Homebrew already exists"
+	if command -v brew &> /dev/null; then
+        	success "Homebrew already exists"
+	exit
     else
-        url=https://raw.githubusercontent.com/djjlewis/dotfiles/master/installers/homebrew-installer
-        if /usr/bin/ruby -e "$(curl -fsSL ${url})"; then
+        url="https://raw.githubusercontent.com/Homebrew/install/master/install.sh"
+        if /bin/bash -c "$(curl -fsSL ${url})"; then
             success "Homebrew installation succeeded"
         else
             error "Homebrew installation failed"
@@ -52,7 +43,7 @@ function install_homebrew() {
 }
 
 function install_packages_with_brewfile() {
-    BREW_FILE_PATH="${DOTFILES_REPO}/brew/macOS.Brewfile"
+    BREW_FILE_PATH="${DOTFILES_REPO}/macOS/brew/macOS.Brewfile"
     info "Installing packages within ${BREW_FILE_PATH}"
     if brew bundle check --file="$BREW_FILE_PATH" &> /dev/null; then
         success "Brewfile's dependencies are already satisfied "
@@ -64,29 +55,6 @@ function install_packages_with_brewfile() {
             exit 1
         fi
     fi
-}
-
-function install_pip_packages() {
-    pip_packages=(powerline-status tmuxp)
-    info "Installing pip packages \"${pip_packages[*]}\""
-
-    pip3_list_outcome=$(pip3 list)
-    for package_to_install in "${pip_packages[@]}"
-    do
-        if echo "$pip3_list_outcome" | \
-            grep --ignore-case "$package_to_install" &> /dev/null; then
-            substep "\"${package_to_install}\" already exists"
-        else
-            if pip3 install "$package_to_install"; then
-                substep "Package \"${package_to_install}\" installation succeeded"
-            else
-                error "Package \"${package_to_install}\" installation failed"
-                exit 1
-            fi
-        fi
-    done
-
-    success "pip packages successfully installed"
 }
 
 function clone_dotfiles_repo() {
@@ -149,14 +117,11 @@ function setup_tmux() {
 
 function setup_symlinks() {
     APPLICATION_SUPPORT=~/Library/Application\ Support
-    POWERLINE_ROOT_REPO=/usr/local/lib/python3.7/site-packages
 
     info "Setting up symlinks"
-    symlink "bash" ${DOTFILES_REPO}/bash/bash_profile ~/.bash_profile
-    symlink "git" ${DOTFILES_REPO}/git/gitconfig ~/.gitconfig
-    symlink "powerline" ${DOTFILES_REPO}/powerline ${POWERLINE_ROOT_REPO}/powerline/config_files
+    symlink "gitconfig" ${DOTFILES_REPO}/git/gitconfig ~/.gitconfig
+    symlink "gitignore" ${DOTFILES_REPO}/git/gitignore_global ~/.gitignore_global
     symlink "tmux" ${DOTFILES_REPO}/tmux/tmux.conf ~/.tmux.conf
-    symlink "vim" ${DOTFILES_REPO}/vim/vimrc ~/.vimrc
 
     success "Symlinks successfully setup"
 }
@@ -181,8 +146,8 @@ function symlink() {
 
 function update_hosts_file() {
     info "Updating /etc/hosts"
-    own_hosts_file_path=${DOTFILES_REPO}/hosts/own_hosts_file
-    ignored_keywords_path=${DOTFILES_REPO}/hosts/ignored_keywords
+    own_hosts_file_path=${DOTFILES_REPO}/macOS/hosts/own_hosts_file
+    ignored_keywords_path=${DOTFILES_REPO}/macOS/hosts/ignored_keywords
     downloaded_hosts_file_path=/etc/downloaded_hosts_file
     downloaded_updated_hosts_file_path=/etc/downloaded_updated_hosts_file
 

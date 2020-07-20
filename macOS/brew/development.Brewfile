@@ -1,0 +1,28 @@
+brew "azure-cli"
+brew "httpie"
+brew "imagemagick"
+brew "jq"
+brew "node"
+brew "python3"
+brew "sqlite"
+brew "terraform"
+brew "yarn"
+
+tap "homebrew/cask-fonts"
+
+cask "font-fira-code"
+cask "font-inconsolata"
+cask "font-jetbrains-mono"
+cask "font-source-code-pro"
+
+cask "azure-data-studio"
+cask "diffmerge"
+cask "docker"
+cask "dotnet-sdk"
+cask "firefox-developer-edition"
+cask "jetbrains-toolbox"
+cask "microsoft-azure-storage-explorer"
+cask "postman"
+cask "sublime-merge"
+cask "visual-studio-code"
+
