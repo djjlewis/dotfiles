@@ -1,14 +1,18 @@
+tap "homebrew/cask-fonts"
+tap "homebrew/cask-versions" # for firefox developer edition
+tap "nossralf/sqlpackage"
+
 brew "azure-cli"
 brew "httpie"
 brew "imagemagick"
 brew "jq"
 brew "node"
+brew "mono"
 brew "python3"
 brew "sqlite"
+brew "sqlpackage"
 brew "terraform"
 brew "yarn"
-
-tap "homebrew/cask-fonts"
 
 cask "font-fira-code"
 cask "font-inconsolata"
@@ -25,4 +29,3 @@ cask "microsoft-azure-storage-explorer"
 cask "postman"
 cask "sublime-merge"
 cask "visual-studio-code"
-

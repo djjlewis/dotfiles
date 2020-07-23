@@ -43,7 +43,8 @@ function install_homebrew() {
 }
 
 function install_packages_with_brewfile() {
-    BREW_FILE_PATH="${DOTFILES_REPO}/macOS/brew/macOS.Brewfile"
+    #BREW_FILE_PATH="${DOTFILES_REPO}/macOS/brew/macOS.Brewfile"
+    BREW_FILE_PATH="${DOTFILES_REPO}/macOS/brew/core-utils.Brewfile"
     info "Installing packages within ${BREW_FILE_PATH}"
     if brew bundle check --file="$BREW_FILE_PATH" &> /dev/null; then
         success "Brewfile's dependencies are already satisfied "

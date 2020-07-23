@@ -11,6 +11,7 @@ brew "wget"
 
 brew "ack"
 brew "ffmpeg"
+brew "fzf"
 brew "git"
 brew "htop"
 brew "neovim"
@@ -23,3 +24,4 @@ brew "vim"
 brew "youtube-dl"
 
 cask "alacritty"
+cask "powershell"
