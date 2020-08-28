@@ -9,8 +9,10 @@ alias plz='sudo'
 alias diff='diff --color=auto'
 alias grep='grep --color=auto'
 alias ip='ip -color=auto'
-alias ll='ls -FGhl --color=auto --group-directories-first'
 alias ls='ls -F --color=auto --group-directories-first'
+#alias ll='ls -FGhl --color=auto --group-directories-first'
+alias ll='ls -Ghl'
+alias la='ll -a'
 alias vim=nvim
 
 # Set LESS env vars for coloured output in man pages
@@ -32,3 +34,7 @@ man() {
 . ~/.bash_prompt
 
 neofetch --cpu_temp C 2> /dev/null
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion

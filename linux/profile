@@ -1,4 +1,4 @@
-export PATH="$PATH:$HOME/.local/bin:$HOME/.local/bin/studytravel:$HOME/.local/bin/sqlpackage"
+export PATH="$PATH:$HOME/.local/bin:$HOME/.local/bin/studytravel:$HOME/.local/bin/sqlpackage:$HOME/.dotnet/tools"
 export EDITOR="nvim"
 export VISUAL="nvim"
 export TERMINAL="alacritty"
