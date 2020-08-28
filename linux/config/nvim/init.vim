@@ -1,5 +1,4 @@
 call plug#begin('~/.local/share/nvim/plugged')
-"Plug 'chriskempson/base16-vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'OmniSharp/omnisharp-vim'
 Plug 'junegunn/fzf.vim'
@@ -23,7 +22,6 @@ Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app & yarn install'  }
 call plug#end()
 
 let mapleader="\<SPACE>"
-let g:base16_transparent_background = 1
 let g:vimwiki_list = [{'path': '~/notes/', 'syntax': 'markdown', 'ext': '.md'}]
 let g:OmniSharp_server_stdio = 1
 let g:coc_global_extensions = [
@@ -36,15 +34,23 @@ let g:coc_global_extensions = [
   \ 'coc-css',
   \ 'coc-json',
   \ ]
+set background=dark
 set termguicolors
 set hidden
 set number
 set nowrap
 set textwidth=120
 set colorcolumn=+1
-autocmd vimenter * colorscheme gruvbox
+
+"autocmd vimenter * colorscheme gruvbox
+"autocmd ColorScheme * highlight Normal ctermbg=NONE guibg=NONE
+
 " colorscheme default
-" vanilla Vim
+colorscheme gruvbox
+
+" Makes the background transparent again
+highlight Normal ctermbg=NONE guibg=NONE
+
 hi Pmenu ctermbg=red
 " Vim with GUI support
 hi Pmenu guibg=blue
