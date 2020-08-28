@@ -1,6 +1,7 @@
 call plug#begin('~/.local/share/nvim/plugged')
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'OmniSharp/omnisharp-vim'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'Soares/base16.nvim'
 Plug 'morhetz/gruvbox'
@@ -60,6 +61,12 @@ nmap <Leader>e :CocCommand explorer<CR>
 command! -nargs=0 Prettier :CocCommand prettier.formatFile
 vmap <leader>f  <Plug>(coc-format-selected)
 nmap <leader>f  <Plug>(coc-format-selected)
+
+augroup filetypes_web
+    autocmd!
+    autocmd FileType html setlocal shiftwidth=2 softtabstop=2 expandtab 
+    autocmd FileType javascript setlocal shiftwidth=2 softtabstop=2 expandtab 
+augroup END
 
 let g:coc_explorer_global_presets = {
 \   '.vim': {

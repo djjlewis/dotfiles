@@ -46,10 +46,10 @@ osascript -e 'tell application "System Preferences" to quit'
 
 # Enable full keyboard access for all controls
 # (e.g. enable Tab in modal dialogs)
-#defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
+defaults write NSGlobalDomain AppleKeyboardUIMode -int 2
 
 # Disable press-and-hold for keys in favor of key repeat
-#defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false
+defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false
 
 # Set a blazingly fast keyboard repeat rate
 #defaults write NSGlobalDomain KeyRepeat -int 1
@@ -107,13 +107,13 @@ osascript -e 'tell application "System Preferences" to quit'
 #defaults write com.apple.finder AppleShowAllFiles -bool true
 
 # Finder: show all filename extensions
-#defaults write NSGlobalDomain AppleShowAllExtensions -bool true
+defaults write NSGlobalDomain AppleShowAllExtensions -bool true
 
 # Finder: show status bar
-#defaults write com.apple.finder ShowStatusBar -bool true
+defaults write com.apple.finder ShowStatusBar -bool true
 
 # Finder: show path bar
-#defaults write com.apple.finder ShowPathbar -bool true
+defaults write com.apple.finder ShowPathbar -bool true
 
 # Display full POSIX path as Finder window title
 #defaults write com.apple.finder _FXShowPosixPathInTitle -bool true
@@ -162,10 +162,10 @@ osascript -e 'tell application "System Preferences" to quit'
 # 12: Notification Center
 # 13: Lock Screen
 # Top left screen corner → Mission Control
-#defaults write com.apple.dock wvous-tl-corner -int 2
+defaults write com.apple.dock wvous-tl-corner -int 2
 #defaults write com.apple.dock wvous-tl-modifier -int 0
-# Top right screen corner → Desktop
-#defaults write com.apple.dock wvous-tr-corner -int 4
+# Top right screen corner → Mission Control
+defaults write com.apple.dock wvous-tr-corner -int 2
 #defaults write com.apple.dock wvous-tr-modifier -int 0
 
 ###############################################################################
