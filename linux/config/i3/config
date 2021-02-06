@@ -69,6 +69,8 @@ bindsym $mod+minus exec --no-startup-id pamixer -d 5
 
 # scrathpad
 bindsym $mod+Shift+minus move scratchpad
+bindsym $mod+Shift+plus scratchpad show
+#bindsym $mod+minus scratchpad show
 #bindsym $mod+u [title="dropdown"] scratchpad show; [title="dropdown"] move position center
 #; [title="dropdown"] move position center
 bindsym $mod+u [instance="dropdown"] scratchpad show, move position center

@@ -5,6 +5,7 @@
 	editor = vim
 	autocrlf = input
 	excludefiles = ~/.gitignore_global
+	pager = diff-so-fancy | less -RFX
 [diff]
 	tool = vimdiff
 [alias]
