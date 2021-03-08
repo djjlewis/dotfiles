@@ -24,3 +24,5 @@
 	status = always
 [merge]
 	tool = vimdiff
+[pull]
+	ff = only
