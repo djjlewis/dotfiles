@@ -1,4 +1,4 @@
-setxkbmap -layout gb
+setxkbmap -layout gb -option ctrl:nocaps
 eval $(~/.local/bin/wallpaper &)
 xrdb -merge ~/.Xresources
 redshift-gtk &
