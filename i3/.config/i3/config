@@ -44,21 +44,33 @@ client.background       $base07
 #vim: filetype=i3
 
 exec --no-startup-id xrdb ~/.Xresources
-exec --no-startup-id compton
-#exec synergy
-exec bitwarden 
-exec slack
-exec skypeforlinux
-exec spotify
 exec --no-startup-id alacritty --class dropdown -e tmux new-session -s dropdown &
+exec bitwarden 
+exec --no-startup-id compton
+
+# exec synergy
+# exec slack
+# exec skypeforlinux
+# exec spotify
 #-e tmux new -s dropdown
+
 #exec urxvt -name dropdown -e tmux new -s dropdown
 #exec --no-startup-id "sleep 2; xwallpaper --zoom ~/wall.jpg"
 #exec --no-startup-id "feh --randomize --bg-scale ~/wallpaper/minimal"
 #exec_always --no-startup-id "sleep 2;feh --randomize --bg-scale ~/wallpaper/minimal/"
 #exec_always --no-startup-id "sleep 2;feh --randomize --bg-scale ~/wallpaper/landscapes/"
 
-exec --no-startup-id "i3-msg 'workspace 3; append_layout /home/dan/.i3/workspace-3.json'"
+# exec --no-startup-id "i3-msg 'workspace 3; append_layout /home/dan/.i3/workspace-3.json'"
+
+# xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
+# screen before suspend. Use loginctl lock-session to lock your screen.
+exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
+
+# NetworkManager is the most popular way to manage wireless networks on Linux,
+# and nm-applet is a desktop environment-independent system tray GUI for it.
+exec --no-startup-id nm-applet
+
+bindsym ctrl+$mod+q exec i3lock
 
 bindsym Print exec flameshot gui
 bindsym $mod+shift+w exec firefox 
@@ -76,23 +88,19 @@ bindsym $mod+Shift+plus scratchpad show
 bindsym $mod+u [instance="dropdown"] scratchpad show, move position center
 bindsym $mod+p [title="^Bitwarden$"] scratchpad show
 
-for_window [class="jetbrains-toolbox"] floating enable border none
-for_window [class="JetBrains Toolbox"] floating enable border none
-for_window [class="jetbrains-.*" title="win0"] floating enable border none
+for_window [instance="origin.exe"] floating enable
 for_window [class="jetbrains-.*" title="win0"] floating enable border none
 for_window [class="jetbrains-rider" title="Welcome to JetBrains Rider"] floating enable border none
-for_window [class="Synergy"] floating enable
-for_window [class="^Bitwarden$"] floating enable border none
 
 for_window [class="^.*"] border pixel 1
 smart_borders on
 
 for_window [instance="dropdown"] floating enable, resize set 1600 1080, move scratchpad
 
-for_window [title="^Bitwarden$"] floating enable
-for_window [title="^Bitwarden$"] resize set 1200 800
-for_window [title="^Bitwarden$"] move scratchpad
-for_window [title="^Bitwarden$"] border none
+#for_window [title="^Bitwarden$"] floating enable
+#for_window [title="^Bitwarden$"] resize set 1200 800
+#for_window [title="^Bitwarden$"] move scratchpad
+#for_window [title="^Bitwarden$"] border none
 
 #for_window [class="Slack"] move to workspace $ws3
 #for_window [class="Skype"] ws4 floating enable border none
@@ -136,14 +144,6 @@ bindsym $mod+ctrl+Left workspace prev
 font xft:Noto Sans Medium 10
 # The combination of xss-lock, nm-applet and pactl is a popular choice, so
 # they are included here as an example. Modify as you see fit.
-
-# xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
-# screen before suspend. Use loginctl lock-session to lock your screen.
-exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
-
-# NetworkManager is the most popular way to manage wireless networks on Linux,
-# and nm-applet is a desktop environment-independent system tray GUI for it.
-exec --no-startup-id nm-applet
 
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
@@ -257,6 +257,17 @@ bindsym $mod+Shift+7 move container to workspace number $ws7
 bindsym $mod+Shift+8 move container to workspace number $ws8
 bindsym $mod+Shift+9 move container to workspace number $ws9
 bindsym $mod+Shift+0 move container to workspace number $ws10
+
+workspace 1 output HDMI-A-0
+workspace 2 output HDMI-A-0
+workspace 3 output HDMI-A-1
+workspace 4 output HDMI-A-1
+workspace 5 output HDMI-A-1
+workspace 6 output HDMI-A-0
+workspace 7 output HDMI-A-0
+workspace 8 output HDMI-A-0
+workspace 9 output HDMI-A-0
+workspace 0 output HDMI-A-1
 
 # reload the configuration file
 bindsym $mod+Shift+c reload
