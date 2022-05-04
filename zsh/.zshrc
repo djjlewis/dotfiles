@@ -5,7 +5,7 @@ SAVEHIST=1000
 bindkey -v
 # End of lines configured by zsh-newuser-install
 # The following lines were added by compinstall
-zstyle :compinstall filename '/home/dan/.zshrc'
+zstyle :compinstall filename '$HOME/.zshrc'
 
 autoload -Uz compinit
 compinit
@@ -16,13 +16,21 @@ bindkey '^R' history-incremental-pattern-search-backward
 export CLICOLOR=1
 export FZF_DEFAULT_COMMAND='rg --files'
 
+if [ "$OSTYPE" != linux-gnu ]; then  # Is this the macOS system?
+    alias ls='gls -F --color=auto --group-directories-first'
+    alias grep='ggrep --color=auto'
+    alias fgrep='gfgrep --color=auto'
+    alias find=gfind
+    alias awk=gawk
+    alias sed=gsed
+else
+    alias grep='grep --color=auto'
+    alias ip='ip -color=auto'
+fi
+
 alias plz='sudo'
 alias diff='diff --color=auto'
-alias grep='grep --color=auto'
-alias ip='ip -color=auto'
-alias ls='ls -F --color=auto --group-directories-first'
-#alias ll='ls -FGhl --color=auto --group-directories-first'
-alias ll='ls -Ghl'
+alias ll='ls -FGhl --color=auto --group-directories-first'
 alias la='ll -a'
 alias vim=nvim
 
