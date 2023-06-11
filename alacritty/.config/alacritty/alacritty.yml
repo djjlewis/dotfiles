@@ -1,10 +1,25 @@
 # Configuration for Alacritty, the GPU enhanced terminal emulator.
 
+# Import additional configuration files
+#
+# Imports are loaded in order, skipping all missing files, with the importing
+# file being loaded last. If a field is already present in a previous import, it
+# will be replaced.
+#
+# All imports must either be absolute paths starting with `/`, or paths relative
+# to the user's home directory starting with `~/`.
+import:
+  # uncomment the flavour you want below:
+  #  - ~/.config/alacritty/catppuccin/catppuccin-mocha.yml
+  - ~/.config/alacritty/catppuccin/catppuccin-macchiato.yml
+#  - ~/.config/alacritty/catppuccin/catppuccin-frappe.yml
+#  - ~/.config/alacritty/catppuccin/catppuccin-latte.yml
+
 # Any items in the `env` entry below will be added as
 # environment variables. Some entries may override variables
 # set by alacritty itself.
-#env:
-  # TERM variable
+env:
+  TERM: xterm-256color
   #
   # This value is used to set the `$TERM` environment variable for
   # each instance of Alacritty. If it is not present, alacritty will
@@ -50,7 +65,7 @@ window:
   # Values for `decorations` (macOS only):
   #     - transparent: Title bar, transparent background and title bar buttons
   #     - buttonless: Title bar, transparent background, but no title bar buttons
-  #decorations: full
+  decorations: none
 
   # Startup Mode (changes require restart)
   #
@@ -100,9 +115,13 @@ font:
     #   - (Windows) Consolas
     #family: Source Code Pro
     family: SauceCodePro Nerd Font Mono
+    #family: SourceCodeProRoman-Medium
+    #family: SauceCodeProNerdFontCompleteM-Medium
+      #family: Berkeley Mono Trial
 
     # The `style` can be specified to pick a specific face.
     style: Medium
+    #style: Regular
 
   # Bold font face
   #bold:
@@ -138,7 +157,7 @@ font:
     #style: Bold Italic
 
   # Point size
-  size: 10.0
+  size: 14.0
 
   # Offset is the extra space around each character. `offset.y` can be thought of
   # as modifying the line spacing, and `offset.x` as modifying the letter spacing.
@@ -173,40 +192,40 @@ font:
 #draw_bold_text_with_bright_colors: false
 
 # Colors (Tomorrow Night Bright)
-colors:
-  # Default colors
-  primary:
-    background: '0x181818'
-    foreground: '0xd8d8d8'
+#colors:
+  ## Default colors
+  #primary:
+    #background: '0x181818'
+    #foreground: '0xd8d8d8'
 
-  # Colors the cursor will use if `custom_cursor_colors` is true
-  cursor:
-    text: '0x181818'
-    cursor: '0xd8d8d8'
+  ## Colors the cursor will use if `custom_cursor_colors` is true
+  #cursor:
+    #text: '0x181818'
+    #cursor: '0xd8d8d8'
 
-  # Normal colors
-  normal:
-    black:   '0x181818'
-    red:     '0xab4642'
-    green:   '0xa1b56c'
-    yellow:  '0xf7ca88'
-    blue:    '0x7cafc2'
-    magenta: '0xba8baf'
-    cyan:    '0x86c1b9'
-    white:   '0xd8d8d8'
+  ## Normal colors
+  #normal:
+    #black:   '0x181818'
+    #red:     '0xab4642'
+    #green:   '0xa1b56c'
+    #yellow:  '0xf7ca88'
+    #blue:    '0x7cafc2'
+    #magenta: '0xba8baf'
+    #cyan:    '0x86c1b9'
+    #white:   '0xd8d8d8'
 
-  # Bright colors
-  bright:
-    black:   '0x585858'
-    red:     '0xdc9656'
-    green:   '0x282828'
-    yellow:  '0x383838'
-    blue:    '0xb8b8b8'
-    magenta: '0xe8e8e8'
-    cyan:    '0xa16946'
-    white:   '0xf8f8f8'
+  ## Bright colors
+  #bright:
+    #black:   '0x585858'
+    #red:     '0xdc9656'
+    #green:   '0x282828'
+    #yellow:  '0x383838'
+    #blue:    '0xb8b8b8'
+    #magenta: '0xe8e8e8'
+    #cyan:    '0xa16946'
+    #white:   '0xf8f8f8'
 
-draw_bold_text_with_bright_colors: false
+#draw_bold_text_with_bright_colors: false
 #colors:
   # Default colors
   #primary:

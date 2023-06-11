@@ -1,0 +1,82 @@
+#!/usr/bin/env sh
+
+yabai -m config layout                       bsp
+yabai -m config window_topmost               on
+yabai -m config mouse_follows_focus          on
+yabai -m config auto_balance                 on
+
+#yabai -m config focus_follows_mouse          off
+#yabai -m config window_placement             second_child
+#yabai -m config window_opacity               off
+#yabai -m config window_opacity_duration      0.0
+#yabai -m config window_shadow                on
+#yabai -m config window_border                off
+#yabai -m config window_border_width          1
+
+#yabai -m config split_ratio                  0.50
+#yabai -m config mouse_modifier               fn
+#yabai -m config mouse_action1                move
+#yabai -m config mouse_action2                resize
+
+yabai -m config top_padding                  20
+yabai -m config bottom_padding               20
+yabai -m config left_padding                 20
+yabai -m config right_padding                20
+yabai -m config window_gap                   10
+
+#yabai -m space 1 --label term
+
+# Rules:
+
+yabai -m rule --add app="^System Preferences$" manage=off
+yabai -m rule --add app="^Alfred Preferences$" manage=off
+yabai -m rule --add app="^Calculator$" manage=off
+yabai -m rule --add app="^JetBrains Toolbox$" manage=off
+yabai -m rule --add app="^ExpressVPN$" manage=off
+yabai -m rule --add app="^Docker Desktop$" manage=off
+yabai -m rule --add app="^IINA$" manage=off
+yabai -m rule --add app="^System Preferences$" manage=off
+yabai -m rule --add app="^Insomnia$" manage=off
+
+
+yabai -m rule --add title="Steam" manage=off
+yabai -m rule --add title="Friends List" manage=off
+
+yabai -m rule --add title="Control Center" manage=off
+
+yabai -m rule --add app="Fleet" manage=off
+
+yabai -m rule --add app="^JetBrains Client-EAP$" manage=off
+yabai -m rule --add app="^JetBrains Client-EAP$" title="( – )"  manage=on
+
+yabai -m rule --add app="^JetBrains Rider-EAP$" manage=off
+yabai -m rule --add app="^JetBrains Rider-EAP$" title="( – )"  manage=on
+
+yabai -m rule --add app="^JetBrains Rider$" manage=off
+yabai -m rule --add app="^JetBrains Rider$" title="( – )"  manage=on
+
+yabai -m rule --add app="^WebStorm$" manage=off
+yabai -m rule --add app="^WebStorm$" title="( – )"  manage=on
+
+yabai -m rule --add app="^PyCharm$" manage=off
+yabai -m rule --add app="^PyCharm$" title="( – )"  manage=on
+
+yabai -m rule --add app="^DataGrip$" manage=off
+yabai -m rule --add app="^DataGrip$" title="( – )"  manage=on
+
+#yabai -m rule --add title="Welcome to JetBrains Rider" manage=off
+#yabai -m rule --add title="New Solution" manage=off
+#yabai -m rule --add title="Add Files to Git" manage=off
+#yabai -m rule --add title="Preferences" manage=off
+
+yabai -m rule --add title="pCloud Drive" manage=off
+
+yabai -m rule --add app="^Firefox$" space=2
+yabai -m rule --add app=Emacs space=3
+yabai -m rule --add app="^Microsoft Edge$" space=3
+yabai -m rule --add app="^Logseq$" space=6
+yabai -m rule --add app="^Microsoft Outlook$" space=7
+yabai -m rule --add app="^Microsoft Teams$" space=8
+
+
+echo "yabai configuration loaded.."

@@ -1,6 +1,14 @@
 [user]
 	email = dan@daniellewis.dev
 	name = Dan Lewis
+[includeIf "gitdir:~/projects/work/"]
+	path = ~/.gitconfig-work
+[includeIf "gitdir:~/projects/personal/"]
+	path = ~/.gitconfig-personal
+[includeIf "gitdir:~/.dotfiles/"]
+	path = ~/.gitconfig-personal
+[includeIf "gitdir:~/projects/imprise/"]
+	path = ~/.gitconfig-imprise
 [core]
 	editor = vim
 	autocrlf = input
@@ -26,3 +34,14 @@
 	tool = vimdiff
 [pull]
 	ff = only
+[init]
+	defaultBranch = main
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[credential]
+	helper = /usr/local/share/gcm-core/git-credential-manager
+[credential "https://dev.azure.com"]
+	useHttpPath = true
