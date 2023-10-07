@@ -1,0 +1,40 @@
+[user]
+	email = dan@daniellewis.dev
+	name = Dan Lewis
+[includeIf "gitdir:~/projects/work/"]
+	path = ~/.gitconfig-work
+[includeIf "gitdir:~/projects/personal/"]
+	path = ~/.gitconfig-personal
+[includeIf "gitdir:~/.dotfiles/"]
+	path = ~/.gitconfig-personal
+[includeIf "gitdir:~/projects/imprise/"]
+	path = ~/.gitconfig-imprise
+[core]
+	editor = vim
+	autocrlf = input
+	excludefiles = ~/.gitignore_global
+	pager = diff-so-fancy | less -RFX
+[diff]
+	tool = vimdiff
+[alias]
+	co = checkout
+	st = status
+	br = branch
+	ci = commit
+	ignore = update-index --skip-worktree
+	unignore = update-index --no-skip-worktree
+	ignored = !git ls-files -v | grep \"^S\"
+        l1 = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=short
+        l2 = log --graph --oneline --decorate --all
+	rpo = remote prune origin
+
+[color]
+	status = always
+[merge]
+	tool = vimdiff
+[pull]
+	ff = only
+[init]
+	defaultBranch = main
+[credential]
+	helper = /usr/local/share/gcm-core/git-credential-manager
