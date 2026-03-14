@@ -8,12 +8,12 @@
 #
 # All imports must either be absolute paths starting with `/`, or paths relative
 # to the user's home directory starting with `~/`.
-import:
-  # uncomment the flavour you want below:
-  #  - ~/.config/alacritty/catppuccin/catppuccin-mocha.yml
-  - ~/.config/alacritty/catppuccin/catppuccin-macchiato.yml
-#  - ~/.config/alacritty/catppuccin/catppuccin-frappe.yml
-#  - ~/.config/alacritty/catppuccin/catppuccin-latte.yml
+# import:
+#   # uncomment the flavour you want below:
+#   #  - ~/.config/alacritty/catppuccin/catppuccin-mocha.yml
+#   - ~/.config/alacritty/catppuccin/catppuccin-macchiato.yml
+##  - ~/.config/alacritty/catppuccin/catppuccin-frappe.yml
+##  - ~/.config/alacritty/catppuccin/catppuccin-latte.yml
 
 # Any items in the `env` entry below will be added as
 # environment variables. Some entries may override variables
@@ -114,7 +114,7 @@ font:
     #   - (Linux/BSD) monospace
     #   - (Windows) Consolas
     #family: Source Code Pro
-    family: SauceCodePro Nerd Font Mono
+    family: SauceCodePro NFM
     #family: SourceCodeProRoman-Medium
     #family: SauceCodeProNerdFontCompleteM-Medium
       #family: Berkeley Mono Trial

@@ -23,6 +23,7 @@ if [ "$OSTYPE" != linux-gnu ]; then  # Is this the macOS system?
     alias find=gfind
     alias awk=gawk
     alias sed=gsed
+    alias cat="bat -pp"
 else
     alias grep='grep --color=auto'
     alias ip='ip -color=auto'

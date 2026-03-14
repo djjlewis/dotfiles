@@ -30,6 +30,6 @@ mv ~/.bashrc ~/.bashrc.bak
 mv ~/.zshrc ~/.zshrc.bak
 mv ~/.gitconfig ~/.gitconfig.bak
 
-stow bash git zsh
+stow aerospace bash git zsh
 
 echo "Devcontainer dotfile setup complete."
