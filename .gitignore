@@ -1,3 +1,5 @@
 */newsboat/cache.db
 */newsboat/history.cmdline
 */newsboat/queue
+git/.gitconfig-personal
+git/.gitconfig-work

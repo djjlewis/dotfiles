@@ -1,8 +1,8 @@
 [user]
 	email = dan@daniellewis.dev
 	name = Dan Lewis
-[includeIf "gitdir:~/projects/work/"]
-	path = ~/.gitconfig-work
+[includeIf "gitdir:~/projects/aos/"]
+    path = ~/.gitconfig-work
 [includeIf "gitdir:~/projects/personal/"]
 	path = ~/.gitconfig-personal
 [includeIf "gitdir:~/.dotfiles/"]
@@ -37,4 +37,4 @@
 [init]
 	defaultBranch = main
 [credential]
-	helper = /usr/local/share/gcm-core/git-credential-manager
+	helper = osxkeychain
