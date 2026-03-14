@@ -6,10 +6,27 @@ DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TIMESTAMP="$(date -u +%Y%m%d%H%M%SZ)"
 BACKUP_DIR="$HOME/.dotfiles-backup-$TIMESTAMP"
 
-stow_targets=(aerospace alacritty bash git nvim zsh)
+common_targets=(alacritty bash git zellij zsh)
+macos_targets=(aerospace)
+linux_targets=()
+stow_targets=()
 
 available_targets=()
 backup_initialized=0
+
+set_active_targets() {
+    case "$(uname -s)" in
+        Darwin)
+            stow_targets=("${common_targets[@]}" "${macos_targets[@]}")
+            ;;
+        Linux)
+            stow_targets=("${common_targets[@]}" "${linux_targets[@]}")
+            ;;
+        *)
+            stow_targets=("${common_targets[@]}")
+            ;;
+    esac
+}
 
 ensure_backup_dir() {
     if [ "$backup_initialized" -eq 0 ]; then
@@ -86,7 +103,7 @@ ensure_linux_deps() {
     export DEBIAN_FRONTEND=noninteractive
     sudo apt-get update -q
 
-    packages=(git zsh neovim npm stow)
+    packages=(curl git npm ripgrep stow zsh)
     missing_packages=()
     local pkg
     for pkg in "${packages[@]}"; do
@@ -115,15 +132,18 @@ ensure_linux_deps() {
 
 case "$(uname -s)" in
     Linux)
+        set_active_targets
         ensure_linux_deps
         ;;
     Darwin)
+        set_active_targets
         if ! command -v stow &>/dev/null; then
             echo "Please install stow with Homebrew (brew install stow) before running this script on macOS."
             exit 1
         fi
         ;;
     *)
+        set_active_targets
         echo "Unsupported OS $(uname -s)."
         exit 1
         ;;

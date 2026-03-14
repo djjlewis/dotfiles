@@ -1,9 +1,9 @@
-#if [ "$OSTYPE" != linux-gnu ]; then  # macOS only:
-#	eval "$(/opt/homebrew/bin/brew shellenv)"
-#fi
+export PATH="$HOME/.local/bin:$HOME/.dotnet/tools:/usr/local/bin:$PATH"
 
-#export PATH="/opt/homebrew/bin:/opt/homebrew/opt:/opt/homebrew/opt/openjdk/bin:$HOME/.local/bin:$HOME/.dotnet/tools:/usr/local/bin:$PATH"
-export PATH="/opt/homebrew/opt/make/libexec/gnubin:/opt/homebrew/opt/openjdk/bin:$HOME/.local/bin:$HOME/.dotnet/tools:/usr/local/bin:$PATH"
+if [[ "$OSTYPE" == darwin* ]]; then
+	export PATH="/opt/homebrew/opt/make/libexec/gnubin:/opt/homebrew/opt/openjdk/bin:$PATH"
+fi
+
 export EDITOR="nvim"
 export VISUAL="nvim"
 export TERMINAL="alacritty"

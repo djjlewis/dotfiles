@@ -7,10 +7,8 @@
 	path = ~/.gitconfig-personal
 [includeIf "gitdir:~/.dotfiles/"]
 	path = ~/.gitconfig-personal
-[includeIf "gitdir:~/projects/imprise/"]
-	path = ~/.gitconfig-imprise
 [core]
-	editor = vim
+	editor = nvim
 	autocrlf = input
 	excludefiles = ~/.gitignore_global
 	pager = diff-so-fancy | less -RFX
