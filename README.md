@@ -1,33 +1,52 @@
 # Dotfiles
 
-This repo is macOS-first.
+Cross-platform: macOS (primary) and Arch Linux (in a Parallels/UTM VM).
 
-Active packages live at the repo root and are the only packages installed by default via [install.sh](install.sh).
+Active packages live at the repo root. [install.sh](install.sh) selects the right ones for the current OS.
 
-Current active packages:
+## Active packages
 
-- aerospace
-- alacritty
-- bash
-- git
-- zellij
-- zsh
+| Package    | macOS | Linux | Notes |
+|------------|:-----:|:-----:|-------|
+| aerospace  |   ✓   |       | macOS tiling WM |
+| alacritty  |   ✓   |   ✓   | TOML only (YAML format dead since v0.13) |
+| bash       |   ✓   |   ✓   | Fallback shell |
+| git        |   ✓   |   ✓   | Credential helper set per-OS in `.gitconfig-personal` |
+| zellij     |   ✓   |   ✓   | |
+| zsh        |   ✓   |   ✓   | OS-aware aliases; auto-startx on tty1 (Linux) |
+| i3         |       |   ✓   | Tiling WM (gaps built-in since v4.22) |
+| polybar    |       |   ✓   | Status bar |
+| picom      |       |   ✓   | Compositor |
+| rofi       |       |   ✓   | Launcher |
+| dunst      |       |   ✓   | Notifications |
+| x11        |       |   ✓   | `.xinitrc` + `.Xresources` |
 
-Archived configs live under [archive/linux](archive/linux) and [archive/legacy](archive/legacy).
+## Bootstrap
 
-- [archive/linux](archive/linux) contains old Linux desktop and helper configs kept as reference for a future Linux setup.
-- [archive/legacy](archive/legacy) contains configs for tools no longer managed here, including tmux, old Vim/Neovim configs, and pre-AeroSpace macOS window manager configs.
+System-level bootstrap (Homebrew on macOS; Arch base + desktop stack on Linux)
+is handled by a separate [os-install-scripts](https://github.com/djjlewis/os-install-scripts)
+repo. That repo's `linux/post-install.sh` clones this one and runs `install.sh`.
 
-System bootstrap is handled outside this repo.
+## install.sh
 
-- Homebrew and machine bootstrap live in a separate install-scripts repo.
+- **macOS**: requires `stow` (install via `brew install stow`).
+- **Linux (Debian/Ubuntu)**: installs `curl git npm ripgrep stow zsh zellij neovim`
+  via apt; installs `diff-so-fancy` via npm; `starship` via curl|sh.
+- **Linux (Arch)**: installs `curl git stow zsh ripgrep starship diff-so-fancy
+  zellij neovim` via pacman.
 
-Local-only config:
+## Local-only config
 
-- `git/.gitconfig-work` stays ignored because it contains work identity details.
+- `git/.gitconfig-personal` and `git/.gitconfig-work` stay ignored — they hold
+  identity details and the OS-specific credential helper.
 
-Tools intentionally not managed here right now:
+## Archived configs
 
-- LazyVim / Neovim distribution setup
+- [archive/legacy](archive/legacy) — tmux, old Vim/Neovim, pre-AeroSpace macOS window managers.
+- [archive/linux](archive/linux) — older Linux configs (compton-era i3, urxvt,
+  multi-monitor scripts) kept for reference but no longer stowed.
 
-The install script focuses on the current active setup, not on restoring every historical machine this repo has ever supported.
+## Not managed here
+
+- LazyVim / Neovim distribution setup — bootstrapped by `os-install-scripts`'s
+  `post-install.sh` (clones LazyVim starter into `~/.config/nvim`).

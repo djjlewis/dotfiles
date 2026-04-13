@@ -10,7 +10,7 @@
 [core]
 	editor = nvim
 	autocrlf = input
-	excludefiles = ~/.gitignore_global
+	excludesfile = ~/.gitignore_global
 	pager = diff-so-fancy | less -RFX
 [diff]
 	tool = vimdiff
@@ -34,5 +34,7 @@
 	ff = only
 [init]
 	defaultBranch = main
-[credential]
-	helper = osxkeychain
+# Credential helper is OS-specific — set in ~/.gitconfig-personal:
+#   macOS: helper = osxkeychain
+#   Arch:  helper = libsecret  (install: pacman -S libsecret + git-credential-libsecret)
+#   Other: helper = cache --timeout=3600

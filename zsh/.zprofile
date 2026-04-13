@@ -12,6 +12,11 @@ export READER="zathura"
 export MANWIDTH=120
 
 # Start graphical server on tty1 if not already running.
-if [ "$OSTYPE" = linux-gnu ]; then  # linux only:
+if [[ "$OSTYPE" == linux-gnu* ]]; then
 	[ "$(tty)" = "/dev/tty1" ] && ! pgrep -x Xorg >/dev/null && exec startx
+fi
+
+# OrbStack — macOS-only container/VM tool
+if [[ "$OSTYPE" == darwin* ]] && [ -f ~/.orbstack/shell/init.zsh ]; then
+	source ~/.orbstack/shell/init.zsh
 fi

@@ -1,0 +1,120 @@
+# i3 config — minimal VM-friendly baseline (Arch ARM in Parallels/UTM)
+# i3 v4.22+ has gaps built in; AUR i3-gaps no longer required.
+
+# ── Mod key ──────────────────────────────────────────────────────────────────
+set $mod Mod4
+# Vim-style direction keys
+set $up    k
+set $right l
+set $down  j
+set $left  h
+
+# ── Base16 Default Dark palette (matches old setup) ──────────────────────────
+set $base00 #181818
+set $base01 #282828
+set $base02 #383838
+set $base03 #585858
+set $base05 #d8d8d8
+set $base07 #f8f8f8
+set $base08 #ab4642
+set $base0B #a1b56c
+set $base0D #7cafc2
+
+# Window borders / colours
+# class                 border  bground text    indicator child_border
+client.focused          $base0B $base0B $base00 $base07   $base0B
+client.focused_inactive $base01 $base01 $base05 $base03   $base01
+client.unfocused        $base01 $base00 $base05 $base01   $base01
+client.urgent           $base08 $base08 $base00 $base08   $base08
+client.placeholder      $base00 $base00 $base05 $base00   $base00
+client.background       $base07
+
+# ── Fonts (used for window titles and bar fallback) ──────────────────────────
+font pango:JetBrainsMono Nerd Font 10
+
+# ── Gaps (built-in since v4.22) ──────────────────────────────────────────────
+gaps inner 8
+gaps outer 4
+smart_gaps on
+smart_borders on
+default_border pixel 2
+
+# ── Autostart ────────────────────────────────────────────────────────────────
+exec_always --no-startup-id picom --daemon
+exec_always --no-startup-id dunst
+exec_always --no-startup-id nm-applet
+exec_always --no-startup-id "killall -q polybar; polybar --reload main &"
+# Wallpaper — drop a JPG/PNG at ~/.config/wallpaper and uncomment:
+# exec_always --no-startup-id feh --bg-scale ~/.config/wallpaper
+
+# ── Keybindings ──────────────────────────────────────────────────────────────
+bindsym $mod+Return       exec alacritty
+bindsym $mod+d            exec rofi -show drun
+bindsym $mod+Tab          exec rofi -show window
+bindsym $mod+Shift+q      kill
+bindsym $mod+Shift+r      restart
+bindsym $mod+Shift+c      reload
+bindsym $mod+Shift+e      exec "i3-msg exit"
+bindsym ctrl+$mod+l       exec i3lock -c 181818
+
+# Focus
+bindsym $mod+$left        focus left
+bindsym $mod+$down        focus down
+bindsym $mod+$up          focus up
+bindsym $mod+$right       focus right
+
+# Move
+bindsym $mod+Shift+$left  move left
+bindsym $mod+Shift+$down  move down
+bindsym $mod+Shift+$up    move up
+bindsym $mod+Shift+$right move right
+
+# Layout
+bindsym $mod+s            layout stacking
+bindsym $mod+w            layout tabbed
+bindsym $mod+e            layout toggle split
+bindsym $mod+f            fullscreen toggle
+bindsym $mod+space        floating toggle
+bindsym $mod+v            split v
+bindsym $mod+b            split h
+
+# Workspaces
+set $ws1 "1"
+set $ws2 "2"
+set $ws3 "3"
+set $ws4 "4"
+set $ws5 "5"
+bindsym $mod+1 workspace $ws1
+bindsym $mod+2 workspace $ws2
+bindsym $mod+3 workspace $ws3
+bindsym $mod+4 workspace $ws4
+bindsym $mod+5 workspace $ws5
+bindsym $mod+Shift+1 move container to workspace $ws1
+bindsym $mod+Shift+2 move container to workspace $ws2
+bindsym $mod+Shift+3 move container to workspace $ws3
+bindsym $mod+Shift+4 move container to workspace $ws4
+bindsym $mod+Shift+5 move container to workspace $ws5
+
+# Resize mode
+mode "resize" {
+    bindsym $left  resize shrink width  10 px or 10 ppt
+    bindsym $down  resize grow   height 10 px or 10 ppt
+    bindsym $up    resize shrink height 10 px or 10 ppt
+    bindsym $right resize grow   width  10 px or 10 ppt
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+bindsym $mod+r mode "resize"
+
+# Screenshot
+bindsym Print exec --no-startup-id "scrot ~/Pictures/screenshot-%Y%m%d-%H%M%S.png"
+
+# Volume (works once pulseaudio/pipewire is set up — VM audio is hit-and-miss)
+bindsym XF86AudioRaiseVolume exec --no-startup-id pamixer -i 5
+bindsym XF86AudioLowerVolume exec --no-startup-id pamixer -d 5
+bindsym XF86AudioMute        exec --no-startup-id pamixer -t
+
+# Polybar replaces the default i3bar — but keep one as a fallback if polybar
+# isn't installed yet, controlled by absence/presence below. Comment out if
+# you always want polybar:
+# bar { status_command i3status }

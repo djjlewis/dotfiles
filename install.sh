@@ -8,7 +8,7 @@ BACKUP_DIR="$HOME/.dotfiles-backup-$TIMESTAMP"
 
 common_targets=(alacritty bash git zellij zsh)
 macos_targets=(aerospace)
-linux_targets=()
+linux_targets=(i3 polybar picom rofi dunst x11)
 stow_targets=()
 
 available_targets=()
@@ -99,12 +99,22 @@ backup_stow_conflicts() {
     done <<< "$dry_run_output"
 }
 
-ensure_linux_deps() {
+detect_linux_distro() {
+    if [ -r /etc/os-release ]; then
+        # shellcheck disable=SC1091
+        . /etc/os-release
+        echo "${ID:-unknown}"
+    else
+        echo "unknown"
+    fi
+}
+
+ensure_linux_deps_apt() {
     export DEBIAN_FRONTEND=noninteractive
     sudo apt-get update -q
 
-    packages=(curl git npm ripgrep stow zsh)
-    missing_packages=()
+    local packages=(curl git npm ripgrep stow zsh zellij neovim)
+    local missing_packages=()
     local pkg
     for pkg in "${packages[@]}"; do
         if ! dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "install ok installed"; then
@@ -116,18 +126,52 @@ ensure_linux_deps() {
         sudo apt-get install -yq "${missing_packages[@]}"
     fi
 
-    if ! command -v npm &>/dev/null; then
-        echo "Failed to install npm"
-        exit 1
-    fi
-
     if ! command -v diff-so-fancy &>/dev/null; then
-        npm install -g diff-so-fancy
+        if command -v npm &>/dev/null; then
+            sudo npm install -g diff-so-fancy
+        else
+            echo "npm not available; skipping diff-so-fancy."
+        fi
     fi
 
     if ! command -v starship &>/dev/null; then
         sh -c "$(curl -fsSL https://starship.rs/install.sh)" -- --yes
     fi
+}
+
+ensure_linux_deps_pacman() {
+    # Arch's post-install.sh in os-install-scripts already installs the bulk —
+    # this is the safety net for running install.sh standalone on a fresh box.
+    local packages=(curl git stow zsh ripgrep starship diff-so-fancy zellij neovim)
+    local missing=()
+    local pkg
+    for pkg in "${packages[@]}"; do
+        if ! pacman -Q "$pkg" &>/dev/null; then
+            missing+=("$pkg")
+        fi
+    done
+
+    if [ ${#missing[@]} -gt 0 ]; then
+        sudo pacman -S --noconfirm --needed "${missing[@]}"
+    fi
+}
+
+ensure_linux_deps() {
+    local distro
+    distro="$(detect_linux_distro)"
+    case "$distro" in
+        ubuntu|debian|pop|linuxmint)
+            ensure_linux_deps_apt
+            ;;
+        arch|archarm|manjaro|endeavouros)
+            ensure_linux_deps_pacman
+            ;;
+        *)
+            echo "Unknown Linux distro '$distro'. Install these manually before re-running:"
+            echo "  curl git stow zsh ripgrep starship diff-so-fancy"
+            exit 1
+            ;;
+    esac
 }
 
 case "$(uname -s)" in

@@ -1,0 +1,66 @@
+/* Rofi config — minimal launcher styling, Base16 Default Dark to match i3. */
+
+configuration {
+    modi:                   "drun,run,window,ssh";
+    show-icons:             true;
+    icon-theme:             "Adwaita";
+    font:                   "JetBrainsMono Nerd Font 11";
+    drun-display-format:    "{name}";
+    display-drun:           " Apps";
+    display-run:            " Run";
+    display-window:         "  Window";
+    display-ssh:            "  SSH";
+    sidebar-mode:           false;
+}
+
+* {
+    bg:        #181818;
+    bg-alt:    #282828;
+    fg:        #d8d8d8;
+    fg-alt:    #585858;
+    accent:    #a1b56c;
+    urgent:    #ab4642;
+
+    background-color:       transparent;
+    text-color:             @fg;
+    border:                 0;
+    margin:                 0;
+    padding:                0;
+    spacing:                0;
+}
+
+window {
+    background-color: @bg;
+    border:           2;
+    border-color:     @accent;
+    border-radius:    4;
+    width:            560;
+    location:         center;
+    padding:          12;
+}
+
+inputbar {
+    children: [ prompt, entry ];
+    padding:  8;
+    spacing:  6;
+    background-color: @bg-alt;
+    border-radius: 3;
+}
+
+prompt { text-color: @accent; }
+entry  { placeholder: "Search…"; placeholder-color: @fg-alt; }
+
+listview {
+    columns:    1;
+    lines:      8;
+    padding:    8 0 0 0;
+    scrollbar:  false;
+}
+
+element {
+    padding: 6 8;
+    border-radius: 3;
+}
+element selected   { background-color: @accent; text-color: @bg; }
+element-icon       { size: 1.2em; padding: 0 6 0 0; }
+element-text       { vertical-align: 0.5; }
