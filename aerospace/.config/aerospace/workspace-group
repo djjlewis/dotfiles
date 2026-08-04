@@ -1,0 +1,72 @@
+#!/bin/sh
+
+set -eu
+
+AEROSPACE_BIN="${AEROSPACE_BIN:-aerospace}"
+
+usage() {
+    echo "Usage: $0 (group P|W | workspace 0-9 | move 0-9 | move-to P|W 0-9)" >&2
+    exit 2
+}
+
+focused_workspace() {
+    "$AEROSPACE_BIN" list-workspaces --focused --format '%{workspace}'
+}
+
+current_group() {
+    case "$1" in
+        P[0-9]) echo P ;;
+        W[0-9]) echo W ;;
+        *) echo P ;;
+    esac
+}
+
+current_slot() {
+    case "$1" in
+        [CPW][0-9]) printf '%s\n' "${1#?}" ;;
+        [0-9]) printf '%s\n' "$1" ;;
+        *) echo 0 ;;
+    esac
+}
+
+action="${1:-}"
+value="${2:-}"
+slot="${3:-}"
+
+case "$action" in
+    group)
+        case "$value" in
+            P|W) ;;
+            *) usage ;;
+        esac
+        workspace="$(focused_workspace)"
+        exec "$AEROSPACE_BIN" workspace "${value}$(current_slot "$workspace")"
+        ;;
+    workspace|move)
+        case "$value" in
+            [0-9]) ;;
+            *) usage ;;
+        esac
+        workspace="$(focused_workspace)"
+        target="$(current_group "$workspace")${value}"
+        if [ "$action" = workspace ]; then
+            exec "$AEROSPACE_BIN" workspace "$target"
+        else
+            exec "$AEROSPACE_BIN" move-node-to-workspace "$target"
+        fi
+        ;;
+    move-to)
+        case "$value" in
+            P|W) ;;
+            *) usage ;;
+        esac
+        case "$slot" in
+            [0-9]) ;;
+            *) usage ;;
+        esac
+        exec "$AEROSPACE_BIN" move-node-to-workspace "${value}${slot}"
+        ;;
+    *)
+        usage
+        ;;
+esac
