@@ -1,7 +1,7 @@
 # Dotfiles
 
-GNU Stow packages for a macOS setup modelled on [Omarchy](https://omarchy.org): AeroSpace for tiling, Ghostty, tmux,
-zsh with Omarchy's shell tools, LazyVim, and a `theme` command that recolours the terminal stack. Linux gets the shared
+GNU Stow packages for a macOS setup modelled on [Omarchy](https://omarchy.org): AeroSpace for tiling, Ghostty, tmux, zsh
+with Omarchy's shell tools, LazyVim, and a `theme` command that recolours the terminal stack. Linux gets the shared
 shell packages only, and has not been tested since the move to Omarchy.
 
 ## Install
@@ -23,20 +23,20 @@ The script:
 - Applies the `catppuccin-macchiato` theme if the machine has no theme yet.
 
 The profile is saved to `~/.config/dotfiles/profile`, so later runs need no arguments. `--no-brew` stows the configs
-without touching packages. On Linux the script stows the shared packages and installs the shell toolchain with pacman
-or apt.
+without touching packages. On Linux the script stows the shared packages and installs the shell toolchain with pacman or
+apt.
 
 ## Guides
 
-| Guide                       | Covers                                                                    |
-| --------------------------- | ------------------------------------------------------------------------- |
-| [macOS](docs/macos.md)      | Settings panel keys, reminders, notices, notifications                    |
-| [AeroSpace](docs/aerospace.md) | Window, workspace and launcher keys                                    |
-| [Ghostty](docs/ghostty.md)  | Terminal keys, font, and the `ghostty` launcher                           |
-| [Shell](docs/shell.md)      | zsh aliases, fzf, zoxide, and the worktree, ssh and rsync functions       |
-| [tmux](docs/tmux.md)        | Prefix keys and the `tdl`, `tds`, `tdlm` and `tsl` layouts                |
-| [Neovim](docs/neovim.md)    | LazyVim and the markdown setup                                            |
-| [Themes](docs/theme.md)     | The `theme` command and how to add a palette                              |
+| Guide                          | Covers                                                              |
+| ------------------------------ | ------------------------------------------------------------------- |
+| [macOS](docs/macos.md)         | Settings panel keys, reminders, notices, notifications              |
+| [AeroSpace](docs/aerospace.md) | Window, workspace and launcher keys                                 |
+| [Ghostty](docs/ghostty.md)     | Terminal keys, font, and the `ghostty` launcher                     |
+| [Shell](docs/shell.md)         | zsh aliases, fzf, zoxide, and the worktree, ssh and rsync functions |
+| [tmux](docs/tmux.md)           | Prefix keys and the `tdl`, `tds`, `tdlm` and `tsl` layouts          |
+| [Neovim](docs/neovim.md)       | LazyVim and the markdown setup                                      |
+| [Themes](docs/theme.md)        | The `theme` command and how to add a palette                        |
 
 The setup follows the [Omarchy manual](https://omarchy.org/manual) where macOS allows.
 [Differences from Omarchy](docs/omarchy-differences.md) lists every key and command that had to change, and the
