@@ -1,0 +1,324 @@
+#!/usr/bin/env bash
+#
+# Switch the colour theme across Ghostty, tmux, btop and Neovim.
+#
+# Each theme is a palette file under palettes/. This script renders that
+# palette into the per-app formats and drops them in a state directory the
+# configs include. Nothing in the dotfiles repo changes when you switch.
+
+set -euo pipefail
+
+# Stow links ~/.local/bin/theme at the checkout, so follow the link chain to
+# find the palettes that sit beside this script in the repo.
+script_dir() {
+    local src="${BASH_SOURCE[0]}" dir
+    while [ -L "$src" ]; do
+        dir="$(cd -P "$(dirname "$src")" && pwd)"
+        src="$(readlink "$src")"
+        case "$src" in
+            /*) ;;
+            *) src="$dir/$src" ;;
+        esac
+    done
+    cd -P "$(dirname "$src")" && pwd
+}
+
+SCRIPT_DIR="$(script_dir)"
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles-theme"
+
+# The stowed location first, then the checkout this script sits in, so the
+# script also works when run straight out of the repo before install.sh.
+PALETTE_DIR="$CONFIG_HOME/dotfiles-theme/palettes"
+if [ ! -d "$PALETTE_DIR" ]; then
+    PALETTE_DIR="$SCRIPT_DIR/../../.config/dotfiles-theme/palettes"
+fi
+
+BTOP_THEME_DIR="$CONFIG_HOME/btop/themes"
+BTOP_THEME_NAME="dotfiles-current"
+NVIM_PLUGIN_DIR="$CONFIG_HOME/nvim/lua/plugins"
+NVIM_PLUGIN_FILE="$NVIM_PLUGIN_DIR/dotfiles-theme.lua"
+
+usage() {
+    cat <<'USAGE'
+Usage: theme [command]
+
+  (no command)   Pick a theme interactively. Uses fzf when it is installed.
+  list           List the available themes.
+  show           Print the theme currently applied.
+  set NAME       Apply a theme.
+  -h, --help     Show this message.
+
+tmux picks the new colours up at once. On macOS, press Cmd+Shift+, in Ghostty
+to reload it. btop and Neovim use the new colours the next time they start.
+USAGE
+}
+
+die() {
+    echo "theme: $*" >&2
+    exit 1
+}
+
+theme_names() {
+    local file
+    for file in "$PALETTE_DIR"/*.sh; do
+        [ -e "$file" ] || continue
+        basename "$file" .sh
+    done
+}
+
+current_theme() {
+    if [ -r "$STATE_DIR/name" ]; then
+        cat "$STATE_DIR/name"
+    fi
+}
+
+# Palette files set these. Clear them first so a file with a missing key fails
+# the validation below rather than inheriting the previous theme's value.
+load_palette() {
+    local name="$1"
+    local file="$PALETTE_DIR/$name.sh"
+
+    [ -r "$file" ] || die "unknown theme '$name'. Run 'theme list'."
+
+    label="" mode="" background="" foreground="" cursor=""
+    selection_background="" selection_foreground="" nvim_lua=""
+    palette=()
+
+    # shellcheck disable=SC1090
+    . "$file"
+
+    [ -n "$background" ] || die "$name: no background colour."
+    [ ${#palette[@]} -eq 16 ] || die "$name: palette has ${#palette[@]} colours, expected 16."
+}
+
+render_ghostty() {
+    local i
+    {
+        echo "# Written by 'theme set $1'. Edits here are overwritten."
+        echo "background = $background"
+        echo "foreground = $foreground"
+        echo "cursor-color = $cursor"
+        echo "selection-background = $selection_background"
+        echo "selection-foreground = $selection_foreground"
+        for i in "${!palette[@]}"; do
+            echo "palette = $i=${palette[$i]}"
+        done
+    } > "$STATE_DIR/ghostty.conf"
+}
+
+# Relative luminance, 0-1000. Integer maths so it works in plain bash.
+luminance() {
+    local hex="${1#\#}"
+    echo $(( (2126 * 16#${hex:0:2} + 7152 * 16#${hex:2:2} + 722 * 16#${hex:4:2}) / 2550 ))
+}
+
+# Whichever of the background and the foreground sits furthest from the accent
+# in luminance. Light themes get light text on their darker accent and dark
+# themes get dark text on their lighter one, with no per-theme rule.
+contrast_with() {
+    local accent_lum bg_lum fg_lum bg_gap fg_gap
+    accent_lum="$(luminance "$1")"
+    bg_lum="$(luminance "$background")"
+    fg_lum="$(luminance "$foreground")"
+    bg_gap=$(( accent_lum > bg_lum ? accent_lum - bg_lum : bg_lum - accent_lum ))
+    fg_gap=$(( accent_lum > fg_lum ? accent_lum - fg_lum : fg_lum - accent_lum ))
+
+    if [ "$bg_gap" -ge "$fg_gap" ]; then
+        printf '%s' "$background"
+    else
+        printf '%s' "$foreground"
+    fi
+}
+
+# tmux.conf styles the status line with named colours, which already follow the
+# terminal palette. This file only overrides the two places that need a real
+# contrast colour against the accent: text drawn on top of it.
+render_tmux() {
+    local accent="${palette[4]}"
+    local on_accent
+    on_accent="$(contrast_with "$accent")"
+
+    {
+        echo "# Written by 'theme set $1'. Edits here are overwritten."
+        echo "set -g status-left \"#[fg=$on_accent,bg=$accent,bold] #S #[bg=default] \""
+        echo "set -g mode-style \"bg=$accent,fg=$on_accent\""
+    } > "$STATE_DIR/tmux.conf"
+}
+
+render_btop() {
+    # install.sh stows btop unfolded so these stay real directories. If either
+    # is a symlink, stow folded the package and this write would land in the
+    # dotfiles repo instead of the home directory.
+    if [ -L "$CONFIG_HOME/btop" ] || [ -L "$BTOP_THEME_DIR" ]; then
+        echo "theme: ~/.config/btop is a symlink into the dotfiles repo." >&2
+        echo "       Re-run install.sh to unfold it, then set the theme again." >&2
+        return 0
+    fi
+
+    mkdir -p "$BTOP_THEME_DIR"
+
+    cat > "$BTOP_THEME_DIR/$BTOP_THEME_NAME.theme" <<EOF
+# Written by 'theme set $1'. Edits here are overwritten.
+theme[main_bg]="$background"
+theme[main_fg]="$foreground"
+theme[title]="$foreground"
+theme[hi_fg]="${palette[4]}"
+theme[selected_bg]="$selection_background"
+theme[selected_fg]="${palette[4]}"
+theme[inactive_fg]="${palette[8]}"
+theme[graph_text]="${palette[7]}"
+theme[meter_bg]="$selection_background"
+theme[proc_misc]="${palette[7]}"
+theme[cpu_box]="${palette[5]}"
+theme[mem_box]="${palette[2]}"
+theme[net_box]="${palette[1]}"
+theme[proc_box]="${palette[4]}"
+theme[div_line]="${palette[8]}"
+theme[temp_start]="${palette[2]}"
+theme[temp_mid]="${palette[3]}"
+theme[temp_end]="${palette[1]}"
+theme[cpu_start]="${palette[6]}"
+theme[cpu_mid]="${palette[4]}"
+theme[cpu_end]="${palette[5]}"
+theme[free_start]="${palette[5]}"
+theme[free_mid]="${palette[4]}"
+theme[free_end]="${palette[6]}"
+theme[cached_start]="${palette[4]}"
+theme[cached_mid]="${palette[6]}"
+theme[cached_end]="${palette[5]}"
+theme[available_start]="${palette[3]}"
+theme[available_mid]="${palette[1]}"
+theme[available_end]="${palette[9]}"
+theme[used_start]="${palette[2]}"
+theme[used_mid]="${palette[6]}"
+theme[used_end]="${palette[4]}"
+theme[download_start]="${palette[3]}"
+theme[download_mid]="${palette[1]}"
+theme[download_end]="${palette[9]}"
+theme[upload_start]="${palette[2]}"
+theme[upload_mid]="${palette[6]}"
+theme[upload_end]="${palette[4]}"
+theme[process_start]="${palette[6]}"
+theme[process_mid]="${palette[4]}"
+theme[process_end]="${palette[5]}"
+theme[gradient_color_0]="$background"
+theme[gradient_color_1]="$selection_background"
+theme[gradient_color_2]="${palette[8]}"
+theme[gradient_color_3]="${palette[8]}"
+theme[gradient_color_4]="${palette[7]}"
+theme[gradient_color_5]="${palette[7]}"
+theme[gradient_color_6]="$foreground"
+theme[gradient_color_7]="${palette[15]}"
+EOF
+}
+
+# The nvim package stows files into ~/.config/nvim, so this writes the spec
+# beside those links. Skip Neovim when the directory is missing, or when it is
+# one symlink to a config this script does not own.
+render_nvim() {
+    if [ ! -d "$CONFIG_HOME/nvim" ] || [ -L "$CONFIG_HOME/nvim" ]; then
+        return 0
+    fi
+
+    mkdir -p "$NVIM_PLUGIN_DIR"
+
+    {
+        echo "-- Written by 'theme set $1'. Edits here are overwritten."
+        echo "return {"
+        printf '%s' "$nvim_lua"
+        echo "}"
+    } > "$NVIM_PLUGIN_FILE"
+}
+
+# Ghostty reloads on SIGUSR2 on Linux only. The macOS app has no signal or
+# CLI for a reload, so set_theme prints the key to press instead. tmux
+# re-reads the status line from every session at once. btop and Neovim read
+# their files at startup, so they wait.
+reload_apps() {
+    if [ "$(uname -s)" = Linux ] && command -v pkill >/dev/null 2>&1; then
+        pkill -USR2 -x ghostty >/dev/null 2>&1 || true
+    fi
+
+    if command -v tmux >/dev/null 2>&1 && tmux has-session 2>/dev/null; then
+        tmux source-file "$STATE_DIR/tmux.conf" >/dev/null 2>&1 || true
+    fi
+}
+
+set_theme() {
+    local name="$1"
+
+    load_palette "$name"
+    mkdir -p "$STATE_DIR"
+    render_ghostty "$name"
+    render_tmux "$name"
+    render_btop "$name"
+    render_nvim "$name"
+    printf '%s\n' "$name" > "$STATE_DIR/name"
+    reload_apps
+
+    echo "Theme set to $label ($mode)."
+    if [ "$(uname -s)" = Darwin ]; then
+        echo "Press Cmd+Shift+, in Ghostty to reload it."
+    fi
+    echo "Restart btop and Neovim to pick it up."
+}
+
+list_themes() {
+    local current name
+    current="$(current_theme)"
+
+    while IFS= read -r name; do
+        # The name stays in the first column so the output is easy to pipe.
+        # shellcheck disable=SC1090
+        ( . "$PALETTE_DIR/$name.sh"
+          if [ "$name" = "$current" ]; then
+              printf '%-24s %-24s %-6s (current)\n' "$name" "$label" "$mode"
+          else
+              printf '%-24s %-24s %s\n' "$name" "$label" "$mode"
+          fi )
+    done < <(theme_names)
+}
+
+pick_theme() {
+    local choice
+    if command -v fzf >/dev/null 2>&1; then
+        choice="$(list_themes | fzf --height 40% --reverse --header 'Pick a theme' \
+            | awk '{print $1}')"
+        [ -n "$choice" ] || exit 0
+        set_theme "$choice"
+    else
+        list_themes
+        echo
+        echo "Install fzf to pick interactively, or run 'theme set NAME'."
+    fi
+}
+
+[ -d "$PALETTE_DIR" ] || die "no palettes found at $PALETTE_DIR."
+
+case "${1:-}" in
+    "")
+        pick_theme
+        ;;
+    list)
+        list_themes
+        ;;
+    show|current)
+        name="$(current_theme)"
+        if [ -n "$name" ]; then
+            echo "$name"
+        else
+            echo "No theme set. Run 'theme' to pick one."
+        fi
+        ;;
+    set)
+        [ "$#" -eq 2 ] || die "'theme set' needs a theme name. Run 'theme list'."
+        set_theme "$2"
+        ;;
+    -h|--help)
+        usage
+        ;;
+    *)
+        die "unknown command '$1'. Run 'theme --help'."
+        ;;
+esac
