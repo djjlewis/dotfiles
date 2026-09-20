@@ -1,0 +1,60 @@
+# Rsync-on-change watchers. https://omarchy.org/manual/shell-functions/
+# rsw starts one in the background, lsw lists them, dsw stops them.
+#
+# DIFFERS FROM OMARCHY: the watch loop lives in ~/.local/bin/rsw-watch and uses
+# fswatch on macOS. Omarchy inlines it with inotifywait and setsid, neither of
+# which macOS has.
+
+rsw() {
+    if (( $# != 2 )); then
+        echo "Usage: rsw <source> <destination>" >&2
+        return 1
+    fi
+
+    if [[ ! -d "$1" ]]; then
+        echo "rsw: '$1' is not a directory." >&2
+        return 1
+    fi
+
+    # rsw-watch backgrounds itself with its output discarded, so check for a
+    # watcher here. Otherwise a missing fswatch reports "Watching" and syncs
+    # nothing.
+    if ! command -v fswatch >/dev/null 2>&1 && ! command -v inotifywait >/dev/null 2>&1; then
+        echo "rsw: needs fswatch (brew install fswatch) or inotifywait." >&2
+        return 1
+    fi
+
+    local src="${1%/}" dest="$2" sockets rsh
+
+    # Reuse one SSH connection per login, so 1Password only prompts once.
+    sockets="${XDG_RUNTIME_DIR:-$HOME/.ssh/sockets}"
+    mkdir -p "$sockets"
+    rsh="ssh -o ControlMaster=auto -o ControlPath=$sockets/rsw-%r@%h:%p -o ControlPersist=yes"
+
+    RSYNC_RSH="$rsh" nohup rsw-watch "$src" "$dest" >/dev/null 2>&1 &
+    disown
+
+    echo "Watching $src -> $dest"
+}
+
+lsw() {
+    local pids
+    pids="$(pgrep -f 'rsw-watch ')" || {
+        echo "No active watches"
+        return 0
+    }
+    ps -o pid=,command= -p ${=pids}
+}
+
+dsw() {
+    local pids
+    pids="$(pgrep -f 'rsw-watch ')" || {
+        echo "No active watches"
+        return 0
+    }
+
+    local pid
+    for pid in ${=pids}; do
+        kill "$pid" 2>/dev/null && echo "Stopped watch (pid $pid)"
+    done
+}

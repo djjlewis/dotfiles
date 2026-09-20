@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+#
+# Report what changed in Omarchy since we last ported from it.
+#
+# The files in omarchy-baseline/ are verbatim upstream copies, recorded at the
+# moment each local equivalent was written. This fetches the current upstream
+# versions and compares. Our own files are deliberately different, so diffing
+# against those would only ever show noise; diffing against the baseline shows
+# what upstream actually changed.
+#
+#   check-omarchy-drift           list files that moved
+#   check-omarchy-drift --diff    show what changed in each
+#   check-omarchy-drift --accept  record the current upstream as the baseline
+#
+# Accept only after reviewing the diff and deciding whether the local file
+# needs the same change.
+
+set -euo pipefail
+
+REPO="${OMARCHY_REPO:-omacom/omarchy}"
+REF="${OMARCHY_REF:-quattro}"
+BASE_URL="https://raw.githubusercontent.com/$REPO/$REF"
+
+SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BASELINE_DIR="$SCRIPT_DIR/omarchy-baseline"
+MANIFEST="$SCRIPT_DIR/omarchy-tracked.txt"
+
+mode=report
+
+usage() {
+    sed -n '3,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+}
+
+case "${1:-}" in
+    "") ;;
+    --diff) mode=diff ;;
+    --accept) mode=accept ;;
+    -h|--help)
+        usage
+        exit 0
+        ;;
+    *)
+        echo "check-omarchy-drift: unknown option '$1'." >&2
+        usage >&2
+        exit 2
+        ;;
+esac
+
+[ -r "$MANIFEST" ] || { echo "check-omarchy-drift: no manifest at $MANIFEST" >&2; exit 1; }
+
+tmpdir="$(mktemp -d)"
+trap 'rm -rf "$tmpdir"' EXIT
+
+changed=0
+added=0
+failed=0
+checked=0
+
+while read -r upstream local_path; do
+    case "$upstream" in ''|\#*) continue ;; esac
+
+    checked=$((checked + 1))
+    fetched="$tmpdir/$(printf '%s' "$upstream" | tr '/' '_')"
+
+    if ! curl -fsS --max-time 20 -o "$fetched" "$BASE_URL/$upstream"; then
+        echo "could not fetch $upstream" >&2
+        failed=$((failed + 1))
+        continue
+    fi
+
+    baseline="$BASELINE_DIR/$upstream"
+
+    if [ ! -r "$baseline" ]; then
+        if [ "$mode" = accept ]; then
+            mkdir -p "$(dirname "$baseline")"
+            cp "$fetched" "$baseline"
+            echo "recorded  $upstream"
+        else
+            echo "NEW       $upstream (no baseline yet)"
+        fi
+        added=$((added + 1))
+        continue
+    fi
+
+    if cmp -s "$fetched" "$baseline"; then
+        continue
+    fi
+
+    changed=$((changed + 1))
+
+    case "$mode" in
+        accept)
+            cp "$fetched" "$baseline"
+            echo "updated   $upstream"
+            ;;
+        diff)
+            echo "=== $upstream  ->  review $local_path ==="
+            diff -u "$baseline" "$fetched" || true
+            echo
+            ;;
+        report)
+            echo "CHANGED   $upstream  ->  review $local_path"
+            ;;
+    esac
+done < "$MANIFEST"
+
+echo
+echo "Checked $checked file(s) at $REPO@$REF."
+
+if [ "$failed" -gt 0 ]; then
+    echo "$failed could not be fetched."
+fi
+
+case "$mode" in
+    accept)
+        echo "Baseline updated. Commit omarchy-baseline/ with the local changes it prompted."
+        ;;
+    *)
+        if [ "$changed" -eq 0 ] && [ "$added" -eq 0 ]; then
+            echo "No drift. The baseline matches upstream."
+        else
+            echo "$changed changed, $added new."
+            [ "$mode" = report ] && echo "Run with --diff to see what moved."
+        fi
+        ;;
+esac
+
+# Drift is information, not failure. Exit non-zero only when a fetch failed, so
+# this can run in a check without breaking on every upstream commit.
+[ "$failed" -eq 0 ]

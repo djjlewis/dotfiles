@@ -1,0 +1,29 @@
+# Ghostty loads this after ~/.config/ghostty/config on macOS.
+# Keep the Omarchy layout, with the Mac's former Alacritty readability and keys.
+font-size = 14
+background-opacity = 0.9
+macos-option-as-alt = true
+keybind = alt+3=text:#
+auto-update = check
+
+# Ctrl+D closes the last window and quits, as Alacritty did. macOS defaults
+# this to false and keeps the app running with no windows. Linux already
+# defaults to true.
+quit-after-last-window-closed = true
+
+# Ghostty's split and tab keys are Ctrl+Shift on Linux and Command on macOS, so
+# the keys in Omarchy's hotkey list do nothing here by default. These add the
+# Linux keys without removing the Command ones, so both work.
+# https://omarchy.org/manual/hotkeys/
+keybind = ctrl+shift+e=new_split:down
+keybind = ctrl+shift+o=new_split:right
+keybind = ctrl+shift+t=new_tab
+keybind = ctrl+shift+left=previous_tab
+keybind = ctrl+shift+right=next_tab
+keybind = shift+page_up=scroll_page_up
+keybind = shift+page_down=scroll_page_down
+
+# DIFFERS FROM OMARCHY: Ctrl+Alt+Arrows moves between Ghostty splits on Linux.
+# Here those keys belong to tmux pane focus, which is the one that matters
+# inside a tmux session. Alt+1-9 for tabs is left out for the same reason:
+# AeroSpace owns those for workspace slots.

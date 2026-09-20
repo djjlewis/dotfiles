@@ -1,0 +1,125 @@
+# tmux dev layouts. https://omarchy.org/manual/shell-functions/
+# tdl is a script (tmux/.local/bin/tdl) because it also works outside tmux.
+# These three are functions, as they are in Omarchy.
+#
+# DIFFERS FROM OMARCHY: split percentages use `-l NN%`. Omarchy uses `-p NN`,
+# which tmux has deprecated.
+
+# Editor, diff, terminal and agent in a 2x2 square.
+# DIFFERS FROM OMARCHY: the diff pane runs lazygit. Omarchy runs `hunk diff
+# --watch`, and hunk is an Omarchy tool.
+tds() {
+    if [[ -z "$TMUX" ]]; then
+        echo "tds: start tmux first." >&2
+        return 1
+    fi
+
+    local current_dir="$PWD"
+    local agent="${1:-}"
+    local editor_pane diff_pane terminal_pane agent_pane
+
+    editor_pane="$TMUX_PANE"
+    tmux rename-window -t "$editor_pane" "$(basename "$current_dir")"
+
+    terminal_pane="$(tmux split-window -v -l 50% -t "$editor_pane" -c "$current_dir" -P -F '#{pane_id}')"
+    diff_pane="$(tmux split-window -h -l 50% -t "$editor_pane" -c "$current_dir" -P -F '#{pane_id}')"
+    agent_pane="$(tmux split-window -h -l 50% -t "$terminal_pane" -c "$current_dir" -P -F '#{pane_id}')"
+
+    tmux send-keys -t "$editor_pane" "${EDITOR:-nvim} ." C-m
+
+    if command -v lazygit >/dev/null 2>&1; then
+        tmux send-keys -t "$diff_pane" "lazygit" C-m
+    else
+        tmux send-keys -t "$diff_pane" "git diff" C-m
+    fi
+
+    if [[ -n "$agent" ]]; then
+        tmux send-keys -t "$agent_pane" "$agent" C-m
+    fi
+
+    tmux select-pane -t "$editor_pane"
+}
+
+# One tdl window per subdirectory of the current directory. Each window gets
+# three panes, so a directory of ten projects is ten windows and thirty panes.
+# It also renames the current session after the directory.
+tdlm() {
+    if [[ -z "$TMUX" ]]; then
+        echo "tdlm: start tmux first." >&2
+        return 1
+    fi
+
+    local agent="${1:-}"
+    local base_dir="$PWD"
+    local first=1
+    local dir dirpath pane_id
+    local -a dirs
+
+    dirs=("$base_dir"/*(/N))
+
+    if (( ${#dirs[@]} == 0 )); then
+        echo "tdlm: no subdirectories in $base_dir." >&2
+        return 1
+    fi
+
+    # DIFFERS FROM OMARCHY: Omarchy just goes. Three panes per subdirectory adds
+    # up fast, and this also renames the session, so confirm past a handful.
+    if (( ${#dirs[@]} > 5 )); then
+        printf 'tdlm: %d subdirectories means %d windows and %d panes, and renames this session.\n' \
+            ${#dirs[@]} ${#dirs[@]} $(( ${#dirs[@]} * 3 ))
+        read -q "?Continue? [y/N] " || { echo; return 0; }
+        echo
+    fi
+
+    # tmux rejects dots and colons in session names.
+    tmux rename-session "$(basename "$base_dir" | tr '.:' '--')"
+
+    for dir in "${dirs[@]}"; do
+        dirpath="${dir%/}"
+
+        # tdl --here, so the layout lands in the window made below rather than
+        # in another new one. Plain `tdl` inside tmux opens its own window.
+        if (( first )); then
+            tmux send-keys -t "$TMUX_PANE" "cd ${(q)dirpath} && tdl --here $agent" C-m
+            first=0
+        else
+            pane_id="$(tmux new-window -c "$dirpath" -P -F '#{pane_id}')"
+            tmux send-keys -t "$pane_id" "tdl --here $agent" C-m
+        fi
+    done
+}
+
+# A grid of panes all running the same command. Built for running several
+# agents side by side.
+tsl() {
+    if [[ -z "$1" || -z "$2" ]]; then
+        echo "Usage: tsl <pane_count> <command>" >&2
+        return 1
+    fi
+
+    if [[ -z "$TMUX" ]]; then
+        echo "tsl: start tmux first." >&2
+        return 1
+    fi
+
+    local count="$1" cmd="$2"
+    local current_dir="$PWD"
+    local -a panes
+    local new_pane pane
+
+    tmux rename-window -t "$TMUX_PANE" "$(basename "$current_dir")"
+    panes=("$TMUX_PANE")
+
+    # zsh arrays start at 1, so panes[1] is the first pane and panes[-1] the last.
+    while (( ${#panes[@]} < count )); do
+        new_pane="$(tmux split-window -h -t "${panes[-1]}" -c "$current_dir" -P -F '#{pane_id}')"
+        panes+=("$new_pane")
+        tmux select-layout -t "${panes[1]}" tiled
+    done
+
+    for pane in "${panes[@]}"; do
+        tmux send-keys -t "$pane" "$cmd" C-m
+    done
+
+    tmux select-pane -t "${panes[1]}"
+}

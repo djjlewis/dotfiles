@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+# The macOS bundle's CLI only supports +actions; launch the GUI via open.
+if [[ ${1-} == +* ]]; then
+    exec /Applications/Ghostty.app/Contents/MacOS/ghostty "$@"
+fi
+
+exec open -na /Applications/Ghostty.app --args "$@"

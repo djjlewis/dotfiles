@@ -1,0 +1,14 @@
+# Upstream Omarchy files this repo has ported or copied from, and where the
+# local equivalent lives. check-omarchy-drift compares the upstream file
+# against the copy in omarchy-baseline/ and reports what moved.
+#
+# upstream path                        local equivalent
+default/bash/fns/compression           zsh/.config/zsh/fns/compression
+default/bash/fns/worktrees             zsh/.config/zsh/fns/worktrees
+default/bash/fns/ssh-port-forwarding   zsh/.config/zsh/fns/ssh-port-forwarding
+default/bash/fns/ssh-reconnect         zsh/.config/zsh/fns/ssh-reconnect
+default/bash/fns/rsyncing              zsh/.config/zsh/fns/rsyncing
+default/bash/fns/tmux                  zsh/.config/zsh/fns/tmux-layouts
+default/bash/aliases                   zsh/.zshrc
+config/tmux/tmux.conf                  tmux/.config/tmux/tmux.conf
+config/ghostty/config                  ghostty/.config/ghostty/config

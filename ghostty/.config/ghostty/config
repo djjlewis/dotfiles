@@ -1,0 +1,39 @@
+# Based on Omarchy's Ghostty config (quattro, September 2026).
+# Colours come from 'theme set NAME', which writes the file below. Run
+# 'theme list' to see what is available.
+config-file = ?"~/.local/state/dotfiles-theme/ghostty.conf"
+
+# Omarchy 4 writes its own live theme here, after ours, so on Linux the
+# Omarchy theme picker keeps winning. The ~/.config path is where Omarchy 3
+# kept it; both are optional, so listing both is harmless.
+config-file = ?"~/.local/state/omarchy/current/theme/ghostty.conf"
+config-file = ?"~/.config/omarchy/current/theme/ghostty.conf"
+
+font-family = "JetBrainsMono Nerd Font"
+font-style = Regular
+font-size = 9
+
+window-theme = ghostty
+window-padding-x = 14
+window-padding-y = 14
+confirm-close-surface = false
+resize-overlay = never
+gtk-toolbar-style = flat
+
+cursor-style = block
+cursor-style-blink = false
+shell-integration-features = no-cursor,ssh-env
+
+keybind = shift+insert=paste_from_clipboard
+keybind = control+insert=copy_to_clipboard
+keybind = shift+enter=csi:13;2u
+keybind = alt+shift+enter=csi:13;4u
+keybind = super+control+shift+alt+arrow_down=resize_split:down,100
+keybind = super+control+shift+alt+arrow_up=resize_split:up,100
+keybind = super+control+shift+alt+arrow_left=resize_split:left,100
+keybind = super+control+shift+alt+arrow_right=resize_split:right,100
+
+mouse-scroll-multiplier = 0.95
+
+# Omarchy's Hyprland performance setting is Linux-only.
+# async-backend = epoll

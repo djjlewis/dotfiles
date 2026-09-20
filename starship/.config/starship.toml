@@ -1,0 +1,23 @@
+# Minimal Omarchy-style prompt.
+# Named colours, not hex, so the prompt follows the terminal palette. Changing
+# the theme with 'theme set NAME' re-colours it with no edit here.
+format = "$directory$git_branch$git_status$line_break$character"
+add_newline = false
+
+[directory]
+format = "[$path]($style) "
+style = "bold blue"
+truncation_length = 3
+
+[git_branch]
+format = "[$symbol$branch]($style) "
+symbol = " "
+style = "purple"
+
+[git_status]
+format = "([$all_status$ahead_behind]($style) )"
+style = "yellow"
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"

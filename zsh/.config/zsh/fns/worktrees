@@ -1,0 +1,49 @@
+# Git worktrees. https://omarchy.org/manual/shell-functions/
+# ga creates ../<repo>--<branch> and moves into it; gd removes the one you are in.
+
+ga() {
+    if [[ -z "$1" ]]; then
+        echo "Usage: ga <branch>" >&2
+        return 1
+    fi
+
+    local branch="$1" base wt_path
+    base="$(basename "$PWD")"
+    wt_path="../${base}--${branch}"
+
+    git worktree add -b "$branch" "$wt_path" || return 1
+
+    # DIFFERS FROM OMARCHY: mise is optional here, so trust only if installed.
+    if command -v mise >/dev/null 2>&1; then
+        mise trust "$wt_path" >/dev/null 2>&1 || true
+    fi
+
+    cd "$wt_path"
+}
+
+gd() {
+    local cwd worktree root branch
+    cwd="$PWD"
+    worktree="$(basename "$cwd")"
+    root="${worktree%%--*}"
+    branch="${worktree#*--}"
+
+    # DIFFERS FROM OMARCHY: check the directory name before prompting rather
+    # than after, so declining is not the only thing standing between a plain
+    # repo and `git worktree remove --force`.
+    if [[ "$root" == "$worktree" ]]; then
+        echo "gd: '$worktree' is not a ga worktree (expected <repo>--<branch>)." >&2
+        return 1
+    fi
+
+    if command -v gum >/dev/null 2>&1; then
+        gum confirm "Remove worktree $worktree and branch $branch?" || return 0
+    else
+        read -q "?Remove worktree $worktree and branch $branch? [y/N] " || { echo; return 0; }
+        echo
+    fi
+
+    cd "../$root" || return 1
+    git worktree remove "$cwd" --force || return 1
+    git branch -D "$branch"
+}

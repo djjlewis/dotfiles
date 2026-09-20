@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#
+# Background half of rsw. Mirrors a directory once, then re-syncs on change.
+# rsw names this script so lsw and dsw can find it with pgrep.
+
+set -uo pipefail
+
+if [ "$#" -ne 2 ]; then
+    echo "Usage: rsw-watch <source> <destination>" >&2
+    exit 2
+fi
+
+src="${1%/}"
+dest="$2"
+
+# Kill whichever watcher or rsync is running when rsw stops us. macOS has no
+# setsid, so there is no process group to signal the way Omarchy's version does.
+trap 'pkill -P $$ >/dev/null 2>&1; exit 0' TERM INT
+
+if command -v fswatch >/dev/null 2>&1; then
+    # -1 exits after the first event, giving the same shape as inotifywait.
+    watch() { fswatch -1 -r "$src" >/dev/null 2>&1; }
+elif command -v inotifywait >/dev/null 2>&1; then
+    watch() { inotifywait -r -q -e modify,create,delete,move "$src" >/dev/null 2>&1; }
+else
+    echo "rsw-watch: needs fswatch (macOS) or inotifywait (Linux)." >&2
+    exit 1
+fi
+
+rsync -a "$src/" "$dest"
+
+while watch; do
+    rsync -a "$src/" "$dest"
+done

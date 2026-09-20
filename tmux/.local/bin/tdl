@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+# Omarchy-style editor / agent / shell layout for the current project.
+set -euo pipefail
+
+# --here builds the layout in the window we are already in, instead of opening
+# another one. tdlm uses it, because tdlm has already made the window.
+here=0
+if [ "${1:-}" = "--here" ]; then
+    here=1
+    shift
+fi
+
+if [ "$#" -gt 1 ]; then
+    echo "Usage: tdl [--here] [agent-command]" >&2
+    exit 2
+fi
+
+TMUX_BIN="${TMUX_BIN:-tmux}"
+editor="${EDITOR:-nvim}"
+agent="${1:-}"
+outside_tmux=0
+
+if [ -n "${TMUX:-}" ]; then
+    if [ "$here" -eq 1 ]; then
+        # Resolve from TMUX_PANE, not the active window, so this still targets
+        # the right window if focus moved while the command was starting.
+        window_id="$("$TMUX_BIN" display-message -p -t "${TMUX_PANE}" '#{window_id}')"
+        "$TMUX_BIN" rename-window -t "$window_id" "$(basename "$PWD")"
+    else
+        window_id="$("$TMUX_BIN" new-window -P -F '#{window_id}' -n Dev -c "$PWD")"
+    fi
+else
+    outside_tmux=1
+    project="$(printf '%s' "${PWD##*/}" | tr -cs '[:alnum:]_-' '_')"
+    session="Dev-${project}"
+    if "$TMUX_BIN" has-session -t "=$session" 2>/dev/null; then
+        exec "$TMUX_BIN" attach-session -t "$session"
+    fi
+    "$TMUX_BIN" new-session -d -s "$session" -n Dev -c "$PWD"
+    window_id="$("$TMUX_BIN" display-message -p -t "$session" '#{window_id}')"
+fi
+
+editor_pane="$("$TMUX_BIN" display-message -p -t "$window_id" '#{pane_id}')"
+"$TMUX_BIN" send-keys -t "$editor_pane" "$editor ." C-m
+# -l NN% rather than -p NN, which tmux has deprecated.
+"$TMUX_BIN" split-window -v -l 25% -t "$editor_pane" -c "$PWD"
+agent_pane="$("$TMUX_BIN" split-window -h -l 45% -t "$editor_pane" -c "$PWD" -P -F '#{pane_id}')"
+if [ -n "$agent" ]; then
+    "$TMUX_BIN" send-keys -t "$agent_pane" "$agent" C-m
+fi
+"$TMUX_BIN" select-pane -t "$editor_pane"
+
+if [ "$outside_tmux" -eq 1 ]; then
+    exec "$TMUX_BIN" attach-session -t "$session"
+fi

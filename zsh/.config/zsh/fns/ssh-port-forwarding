@@ -1,0 +1,45 @@
+# SSH port forwarding. https://omarchy.org/manual/shell-functions/
+
+# command ssh, not the reconnecting wrapper in ssh-reconnect: -f backgrounds
+# immediately and there is no session to re-establish.
+fip() {
+    if (( $# < 2 )); then
+        echo "Usage: fip <host> <port1> [port2] ..." >&2
+        return 1
+    fi
+
+    local host="$1" port
+    shift
+
+    for port in "$@"; do
+        command ssh -f -N -L "${port}:localhost:${port}" "$host" &&
+            echo "Forwarding localhost:$port -> $host:$port"
+    done
+}
+
+dip() {
+    if (( $# == 0 )); then
+        echo "Usage: dip <port1> [port2] ..." >&2
+        return 1
+    fi
+
+    local port
+    for port in "$@"; do
+        if pkill -f "ssh.*-L ${port}:localhost:${port}"; then
+            echo "Stopped forwarding port $port"
+        else
+            echo "No forwarding on port $port"
+        fi
+    done
+}
+
+# DIFFERS FROM OMARCHY: Omarchy uses `pgrep -af`. BSD pgrep on macOS accepts
+# -a and ignores it, printing bare PIDs, so the command line comes from ps.
+lip() {
+    local pids
+    pids="$(pgrep -f 'ssh.*-L [0-9]+:localhost:[0-9]+')" || {
+        echo "No active forwards"
+        return 0
+    }
+    ps -o pid=,command= -p ${=pids}
+}
