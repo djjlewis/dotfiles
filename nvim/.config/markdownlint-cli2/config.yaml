@@ -1,0 +1,11 @@
+# Base config for markdownlint-cli2, passed with --config from the Neovim
+# linter and formatter. A project's own .markdownlint-cli2.yaml still wins.
+#
+# Prettier wraps markdown at 120 columns, so markdownlint's 80-column default
+# reported every wrapped line as an error. Prettier does not break code blocks
+# or table rows, so those two are left out of the check.
+config:
+  MD013:
+    line_length: 120
+    code_blocks: false
+    tables: false
