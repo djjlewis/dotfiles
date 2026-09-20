@@ -247,3 +247,6 @@ public/
 .dynamodb/
 
 **/.claude/settings.local.json
+
+.claude
+CLAUDE.md

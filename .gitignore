@@ -3,3 +3,7 @@
 */newsboat/queue
 git/.gitconfig-personal
 git/.gitconfig-work
+
+# Keep the repo's shared Claude entry points despite global ignore rules.
+!CLAUDE.md
+!.claude/

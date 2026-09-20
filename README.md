@@ -1,65 +1,100 @@
 # Dotfiles
 
-Cross-platform: macOS (primary) and Arch Linux (in a Parallels/UTM VM).
+GNU Stow packages for a macOS setup modelled on [Omarchy](https://omarchy.org): AeroSpace for tiling, Ghostty, tmux,
+zsh with Omarchy's shell tools, LazyVim, and a `theme` command that recolours the terminal stack. Linux gets the shared
+shell packages only, and has not been tested since the move to Omarchy.
 
-Active packages live at the repo root. [install.sh](install.sh) selects the right ones for the current OS.
+## Install
 
-## Active packages
+On a new Mac, install [Homebrew](https://brew.sh), clone this repo, and run the installer once with a profile:
 
-| Package    | macOS | Linux | Notes |
-|------------|:-----:|:-----:|-------|
-| aerospace  |   ✓   |       | macOS tiling WM |
-| alacritty  |   ✓   |   ✓   | TOML only (YAML format dead since v0.13) |
-| bash       |   ✓   |   ✓   | Fallback shell |
-| git        |   ✓   |   ✓   | Credential helper set per-OS in `.gitconfig-personal` |
-| zellij     |   ✓   |   ✓   | |
-| zsh        |   ✓   |   ✓   | OS-aware aliases; auto-startx on tty1 (Linux) |
-| i3         |       |   ✓   | Tiling WM (gaps built-in since v4.22) |
-| polybar    |       |   ✓   | Status bar |
-| picom      |       |   ✓   | Compositor |
-| rofi       |       |   ✓   | Launcher |
-| dunst      |       |   ✓   | Notifications |
-| x11        |       |   ✓   | `.xinitrc` + `.Xresources` |
+```bash
+./install.sh --profile personal   # personal Mac
+./install.sh --profile work       # work Mac, or just ./install.sh
+```
 
-## Window manager keys
+The script:
 
-- **AeroSpace:** workspaces are arranged into Personal (`P0`–`P9`) and Work
-  (`W0`–`W9`) banks. Press `Option+;`, then `P` or `W` to change bank while keeping the same slot
-  number. `Option+0`–`9` switches slots in the current bank and
-  `Option+Shift+0`–`9` moves the focused window there. Slot 3 also uses Command
-  (`Command+Option+3`, plus Shift to move) so AeroSpace does not swallow
-  `Option+3` (`#` on a UK keyboard). To move across banks, press `Option+;`,
-  then `Shift+P` or `Shift+W`, then the destination number. Toggle one window
-  between floating and tiling with `Option+Shift+;`, then `F`.
-- **i3:** the same numeric workspace and move pattern uses the Super key.
-  `Super+Space` toggles the focused window between floating and tiling.
+- Installs [brew/Brewfile](brew/Brewfile) with `brew bundle`. The personal profile also installs
+  [brew/Brewfile.personal](brew/Brewfile.personal), which adds Maccy and LocalSend. The work profile skips it.
+- Stows the packages below into your home directory. Any file already in the way is moved to
+  `~/.dotfiles-backup-<timestamp>` first.
+- Removes symlinks left behind by packages this repo no longer manages.
+- Applies the `catppuccin-macchiato` theme if the machine has no theme yet.
 
-## Bootstrap
+The profile is saved to `~/.config/dotfiles/profile`, so later runs need no arguments. `--no-brew` stows the configs
+without touching packages. On Linux the script stows the shared packages and installs the shell toolchain with pacman
+or apt.
 
-System-level bootstrap (Homebrew on macOS; Arch base + desktop stack on Linux)
-is handled by a separate [os-install-scripts](https://github.com/djjlewis/os-install-scripts)
-repo. That repo's `linux/post-install.sh` clones this one and runs `install.sh`.
+## Guides
 
-## install.sh
+| Guide                       | Covers                                                                    |
+| --------------------------- | ------------------------------------------------------------------------- |
+| [macOS](docs/macos.md)      | Settings panel keys, reminders, notices, notifications                    |
+| [AeroSpace](docs/aerospace.md) | Window, workspace and launcher keys                                    |
+| [Ghostty](docs/ghostty.md)  | Terminal keys, font, and the `ghostty` launcher                           |
+| [Shell](docs/shell.md)      | zsh aliases, fzf, zoxide, and the worktree, ssh and rsync functions       |
+| [tmux](docs/tmux.md)        | Prefix keys and the `tdl`, `tds`, `tdlm` and `tsl` layouts                |
+| [Neovim](docs/neovim.md)    | LazyVim and the markdown setup                                            |
+| [Themes](docs/theme.md)     | The `theme` command and how to add a palette                              |
 
-- **macOS**: requires `stow` (install via `brew install stow`).
-- **Linux (Debian/Ubuntu)**: installs `curl git npm ripgrep stow zsh zellij neovim`
-  via apt; installs `diff-so-fancy` via npm; `starship` via curl|sh.
-- **Linux (Arch)**: installs `curl git stow zsh ripgrep starship diff-so-fancy
-  zellij neovim` via pacman.
+The setup follows the [Omarchy manual](https://omarchy.org/manual) where macOS allows.
+[Differences from Omarchy](docs/omarchy-differences.md) lists every key and command that had to change, and the
+[parity backlog](docs/omarchy-parity-backlog.md) lists what is still missing.
+
+## Packages
+
+| Package       | macOS | Linux | Notes                                                              |
+| ------------- | :---: | :---: | ------------------------------------------------------------------ |
+| aerospace     |   ✓   |       | Tiling window manager config and the workspace bank script         |
+| bash          |   ✓   |   ✓   | Fallback shell                                                     |
+| btop          |   ✓   |       | Points at the theme the `theme` command writes                     |
+| ghostty       |   ✓   |   ✓   | Layout and keys shared with Linux                                  |
+| ghostty-macos |   ✓   |       | Mac font size, opacity, Option key, extra keys, and the launcher   |
+| git           |   ✓   |   ✓   | Aliases and diff-so-fancy. Identity lives in ignored include files |
+| mac-bin       |   ✓   |       | `remind` and `notice`                                              |
+| nvim          |   ✓   |       | LazyVim starter with the markdown extra                            |
+| starship      |   ✓   |   ✓   | Prompt, coloured from the terminal palette                         |
+| theme         |   ✓   |       | Colour palettes and the `theme` command                            |
+| tmux          |   ✓   |   ✓   | Config and the `tdl` layout script                                 |
+| zsh           |   ✓   |   ✓   | Aliases and the shell functions in `.config/zsh/fns`               |
+
+Everything is stowed with `--no-folding`, because four packages put files in `~/.local/bin` and the `theme` command
+writes into `~/.config/btop/themes` and `~/.config/nvim`. Folded, stow would link a whole directory at one package and
+hide the rest, and the generated Neovim theme spec would land in this repo.
+
+`theme` is macOS-only for now. On Omarchy it would write a colourscheme into Omarchy's own Neovim config.
+
+## Staying in sync with Omarchy
+
+The shell functions are ports, not copies. Omarchy's shell is bash and this one is zsh, so some of its functions
+misbehave when sourced unchanged: bash arrays start at 0 and zsh's at 1, zsh reserves `argv`, and Omarchy's alias file
+replaces `open` with `xdg-open`, which breaks it on macOS.
+
+`scripts/omarchy-baseline` holds the verbatim upstream files each local version was written from. To see what Omarchy
+has changed since:
+
+```bash
+./scripts/check-omarchy-drift           # list files that moved
+./scripts/check-omarchy-drift --diff    # show what changed
+./scripts/check-omarchy-drift --accept  # record upstream as the new baseline
+```
+
+Accept only after deciding whether the local file needs the same change. `scripts/omarchy-tracked.txt` maps each
+upstream file to its local equivalent, and is the place to add another.
 
 ## Local-only config
 
-- `git/.gitconfig-personal` and `git/.gitconfig-work` stay ignored — they hold
-  identity details and the OS-specific credential helper.
+`git/.gitconfig-personal` and `git/.gitconfig-work` stay ignored. They hold identity details and the OS-specific
+credential helper.
 
 ## Archived configs
 
-- [archive/legacy](archive/legacy) — tmux, old Vim/Neovim, pre-AeroSpace macOS window managers.
-- [archive/linux](archive/linux) — older Linux configs (compton-era i3, urxvt,
-  multi-monitor scripts) kept for reference but no longer stowed.
+[archive/legacy](archive/legacy) has Zellij, old Vim and Neovim configs, and older macOS window managers.
+[archive/linux/i3-desktop](archive/linux/i3-desktop) has the X11 desktop Linux used before Omarchy: Alacritty, i3,
+polybar, picom, rofi, dunst and X11. None of it is stowed.
 
-## Not managed here
+## Agent guidance
 
-- LazyVim / Neovim distribution setup — bootstrapped by `os-install-scripts`'s
-  `post-install.sh` (clones LazyVim starter into `~/.config/nvim`).
+[AGENTS.md](AGENTS.md) has repo-specific instructions. The [unslop writing skill](.agents/skills/unslop/SKILL.md) is
+stored in this repo and shared with Claude through symlinks.
