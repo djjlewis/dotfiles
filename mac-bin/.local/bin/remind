@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+#
+# Countdown reminder, the macOS stand-in for `omarchy reminder`.
+# https://omarchy.org/manual/reminders/
+#
+#   remind 5m 'Tea ready'     set a reminder
+#   remind list               show pending reminders
+#   remind clear              cancel them all
+
+set -euo pipefail
+
+usage() {
+    cat <<'USAGE'
+Usage: remind <duration> <message>
+       remind list
+       remind clear
+
+Duration is seconds, or a number with s, m or h (30s, 5m, 2h).
+USAGE
+}
+
+# terminal-notifier first. It is its own app, so macOS asks once whether to
+# allow its notifications and lists it under System Settings > Notifications.
+# osascript's notifications are silently dropped unless the app that ran the
+# script is allowed, and which app that is depends on where remind was run.
+notify() {
+    local message="$1"
+    if command -v terminal-notifier >/dev/null 2>&1; then
+        # Fails when macOS has not allowed it yet, so fall through.
+        terminal-notifier -title "Reminder" -message "$message" -sound Glass >/dev/null 2>&1 && return
+    fi
+    if command -v osascript >/dev/null 2>&1; then
+        # Passed as an argument, never interpolated into the script text, so a
+        # message containing quotes cannot change what AppleScript runs.
+        osascript - "$message" <<'APPLESCRIPT'
+on run argv
+    display notification (item 1 of argv) with title "Reminder" sound name "Glass"
+end run
+APPLESCRIPT
+    elif command -v notify-send >/dev/null 2>&1; then
+        notify-send "Reminder" "$message"
+    else
+        printf 'Reminder: %s\n' "$message"
+    fi
+}
+
+# The background half. Named in the process list so list and clear can find it.
+if [ "${1:-}" = "--timer" ]; then
+    shift
+    seconds="$1"
+    shift
+    sleep "$seconds"
+    notify "$*"
+    exit 0
+fi
+
+case "${1:-}" in
+    -h|--help)
+        usage
+        exit 0
+        ;;
+    ask)
+        # Prompted form, for a window-manager key with no terminal attached.
+        answer="$(osascript -e 'text returned of (display dialog "Reminder" default answer "5m " with title "Set a reminder")' 2>/dev/null)" || exit 0
+        [ -n "$answer" ] || exit 0
+        # shellcheck disable=SC2086
+        exec "$0" $answer
+        ;;
+    list)
+        if pids="$(pgrep -f "$(basename "$0") --timer")"; then
+            # shellcheck disable=SC2086
+            ps -o pid=,command= -p $pids
+        else
+            echo "No pending reminders"
+        fi
+        exit 0
+        ;;
+    clear)
+        if pids="$(pgrep -f "$(basename "$0") --timer")"; then
+            # shellcheck disable=SC2086
+            kill $pids 2>/dev/null || true
+            echo "Cleared pending reminders"
+        else
+            echo "No pending reminders"
+        fi
+        exit 0
+        ;;
+esac
+
+if [ "$#" -lt 2 ]; then
+    usage >&2
+    exit 2
+fi
+
+duration="$1"
+shift
+message="$*"
+
+case "$duration" in
+    *[0-9]s) seconds="${duration%s}" ;;
+    *[0-9]m) seconds=$(( ${duration%m} * 60 )) ;;
+    *[0-9]h) seconds=$(( ${duration%h} * 3600 )) ;;
+    *[0-9]) seconds="$duration" ;;
+    *)
+        usage >&2
+        exit 2
+        ;;
+esac
+
+case "$seconds" in
+    ''|*[!0-9]*)
+        echo "remind: '$duration' is not a valid duration." >&2
+        exit 2
+        ;;
+esac
+
+nohup "$0" --timer "$seconds" "$message" >/dev/null 2>&1 &
+disown 2>/dev/null || true
+
+echo "Reminder set for ${seconds}s: $message"

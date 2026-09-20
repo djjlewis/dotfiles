@@ -1,0 +1,6 @@
+# Personal-machine extras. Skipped on the work profile.
+# Install with: ./install.sh --profile personal
+# These fill gaps where macOS has no equivalent of an Omarchy feature.
+
+cask "maccy"      # clipboard history, Omarchy's Super+Ctrl+V
+cask "localsend"  # local network file transfer, Omarchy's Super+Ctrl+S

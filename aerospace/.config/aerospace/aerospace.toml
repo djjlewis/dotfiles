@@ -42,13 +42,16 @@ automatically-unhide-macos-hidden-apps = false
 persistent-workspaces = [
     'P0', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9',
     'W0', 'W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8', 'W9',
+    # Scratchpad. AeroSpace has no dropdown workspace, so S is an ordinary
+    # workspace that Option+Backtick toggles in and out of.
+    'S',
 ]
 
 # --- App → Workspace rules ---
 # Find app IDs with: `aerospace list-apps` or `mdls -name kMDItemCFBundleIdentifier -r /Applications/App.app`
 
 [[on-window-detected]]
-if.app-id = 'org.alacritty'
+if.app-id = 'com.mitchellh.ghostty'
 run = 'move-node-to-workspace W0'
 
 [[on-window-detected]]
@@ -117,7 +120,14 @@ run = 'move-node-to-workspace W4'
     # See: https://nikitabobko.github.io/AeroSpace/commands#layout
     alt-slash = 'layout tiles horizontal vertical'
     alt-comma = 'layout accordion horizontal vertical'
-    # Toggle one window between floating and tiling with Option+Shift+;, then F.
+    # Omarchy's Super+T/F, translated to Option on macOS.
+    alt-t = 'layout floating tiling'
+    alt-f = 'fullscreen'
+    # Option+Shift+; then F remains the fallback for apps that use Option+F.
+
+    # Option+Arrow is deliberately unbound. macOS uses Option+Arrow to move the
+    # caret by word and Option+Shift+Arrow to select by word, in every text
+    # field and in readline. The vim-style keys below cover focus and move.
 
     # Focus within the workspace first, then hop monitors if we hit the edge.
     alt-h = 'exec-and-forget aerospace focus left --boundaries workspace --boundaries-action fail || aerospace focus-monitor left --wrap-around'
@@ -181,8 +191,45 @@ run = 'move-node-to-workspace W4'
     alt-semicolon = 'mode workspace'
     alt-shift-semicolon = 'mode service'
 
-    # Spawn Alacritty with Alt+Enter
-    alt-shift-enter = "exec-and-forget open -n -a Alacritty"
+    # Omarchy's terminal and tmux terminal launchers, using Option as Super.
+    alt-enter = 'exec-and-forget open -n -a Ghostty'
+    alt-ctrl-enter = 'exec-and-forget "$HOME/.local/bin/ghostty" -e tmux new-session -A -s Work'
+    alt-ctrl-t = 'exec-and-forget "$HOME/.local/bin/ghostty" -e btop'
+    alt-shift-b = 'exec-and-forget open -a Firefox'
+    alt-shift-f = 'exec-and-forget open -a Finder'
+    alt-shift-n = 'exec-and-forget "$HOME/.local/bin/ghostty" -e nvim'
+    alt-shift-d = 'exec-and-forget "$HOME/.local/bin/ghostty" -e lazydocker'
+    alt-shift-a = 'exec-and-forget open -a ChatGPT'
+    # Option+Shift+Enter stays unbound so Ghostty receives its own
+    # alt+shift+enter=csi:13;4u binding. Option+Enter opens a window.
+
+    # --- Omarchy's system panels (Super+Ctrl+letter) ---
+    # macOS System Settings panes. These identifiers exist on macOS 15 and 26.
+    alt-ctrl-a = 'exec-and-forget open "x-apple.systempreferences:com.apple.Sound-Settings.extension"'
+    alt-ctrl-b = 'exec-and-forget open "x-apple.systempreferences:com.apple.BluetoothSettings"'
+    alt-ctrl-w = 'exec-and-forget open "x-apple.systempreferences:com.apple.wifi-settings-extension"'
+    alt-ctrl-d = 'exec-and-forget open "x-apple.systempreferences:com.apple.Displays-Settings.extension"'
+    alt-ctrl-p = 'exec-and-forget open "x-apple.systempreferences:com.apple.Battery-Settings.extension"'
+    alt-ctrl-q = 'exec-and-forget open -a Calculator'
+
+    # Omarchy's Super+Ctrl+R. Prompts, because a window-manager key has no
+    # terminal to type a duration into.
+    alt-ctrl-r = 'exec-and-forget "$HOME/.local/bin/remind" ask'
+    # DIFFERS FROM OMARCHY: Omarchy's notices are Super+Ctrl+Alt+T/B/W, which
+    # cannot exist here because Option is already Super. Only weather gets a
+    # key; the menu bar shows the clock and battery.
+    alt-ctrl-shift-w = 'exec-and-forget "$HOME/.local/bin/notice" weather'
+
+    # DIFFERS FROM OMARCHY: Omarchy cycles windows on a workspace with plain
+    # Alt+Tab. Option+Tab is workspace-back-and-forth here, so cycling moves to
+    # Option+Ctrl+Tab.
+    alt-ctrl-tab = 'focus dfs-next'
+    alt-ctrl-shift-tab = 'focus dfs-prev'
+
+    # Omarchy's scratchpad (Super+S / Super+Grave). AeroSpace has no dropdown
+    # workspace, so this toggles in and out of workspace S instead.
+    alt-backtick = 'workspace --auto-back-and-forth S'
+    alt-shift-backtick = 'move-node-to-workspace S'
 
 # Bank selection lives behind one leader binding so normal Option shortcuts remain
 # available to macOS, VS Code, VSCodeVim, and terminal applications.

@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+#
+# Hotkey notices, the macOS stand-in for Omarchy's.
+# https://omarchy.org/manual/notices/
+#
+#   notice time | battery | weather
+#
+# DIFFERS FROM OMARCHY: Omarchy binds these to Super+Ctrl+Alt+T/B/W. That
+# combination cannot exist on macOS, where Option already plays Super, so only
+# weather gets a key. The menu bar already shows the clock and the battery.
+
+set -euo pipefail
+
+usage() {
+    echo "Usage: notice (time|battery|weather)"
+}
+
+# terminal-notifier first, for the reason given in remind: it has its own
+# notification permission, and osascript's depends on the calling app.
+notify() {
+    local title="$1" message="$2"
+    if command -v terminal-notifier >/dev/null 2>&1; then
+        # Fails when macOS has not allowed it yet, so fall through.
+        terminal-notifier -title "$title" -message "$message" >/dev/null 2>&1 && return
+    fi
+    if command -v osascript >/dev/null 2>&1; then
+        osascript - "$title" "$message" <<'APPLESCRIPT'
+on run argv
+    display notification (item 2 of argv) with title (item 1 of argv)
+end run
+APPLESCRIPT
+    elif command -v notify-send >/dev/null 2>&1; then
+        notify-send "$title" "$message"
+    else
+        printf '%s: %s\n' "$title" "$message"
+    fi
+    printf '%s: %s\n' "$title" "$message"
+}
+
+notice_time() {
+    notify "$(date '+%H:%M')" "$(date '+%A %-d %B %Y')"
+}
+
+notice_battery() {
+    local raw percent state
+    if ! command -v pmset >/dev/null 2>&1; then
+        notify "Battery" "pmset is macOS-only."
+        return
+    fi
+
+    raw="$(pmset -g batt)"
+    percent="$(printf '%s' "$raw" | grep -Eo '[0-9]+%' | head -1)"
+    state="$(printf '%s' "$raw" | grep -Eo 'discharging|charging|charged|AC attached' | head -1)"
+
+    if [ -z "$percent" ]; then
+        notify "Battery" "No battery found."
+    else
+        notify "Battery $percent" "${state:-unknown}"
+    fi
+}
+
+# Uses wttr.in, which geolocates by IP the way Omarchy's weather does.
+# Set WEATHER_LOCATION to skip the lookup, e.g. WEATHER_LOCATION="Shrewsbury".
+notice_weather() {
+    local location="${WEATHER_LOCATION:-}" report
+    if ! report="$(curl -fsS --max-time 10 "https://wttr.in/${location}?format=%l:+%C+%t+feels+%f" 2>/dev/null)"; then
+        notify "Weather" "Could not reach wttr.in."
+        return
+    fi
+    notify "Weather" "$report"
+}
+
+case "${1:-}" in
+    time) notice_time ;;
+    battery) notice_battery ;;
+    weather) notice_weather ;;
+    -h|--help) usage ;;
+    *)
+        usage >&2
+        exit 2
+        ;;
+esac

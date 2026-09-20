@@ -1,0 +1,54 @@
+# Core packages. Every Mac gets these, work or personal.
+# Install with: brew bundle --file brew/Brewfile
+# install.sh runs this for you.
+
+# --- Stow and the configs it links ---
+brew "stow"
+brew "tmux"
+brew "neovim"
+brew "starship"
+brew "git"
+brew "gh"
+brew "diff-so-fancy" # git pager, set in git/.gitconfig
+
+# --- GNU tools that zsh/.zshrc aliases by their g-prefixed names ---
+brew "coreutils"  # gls
+brew "findutils"  # gfind
+brew "gnu-sed"    # gsed
+brew "gawk"
+brew "grep"       # ggrep, gfgrep
+brew "make"       # zsh/.zprofile puts its gnubin on PATH
+
+# --- Omarchy's shell tools ---
+# https://omarchy.org/manual/shell-tools/
+brew "fzf"
+brew "zoxide"
+brew "eza"
+brew "bat"
+brew "ripgrep"
+brew "fd"
+brew "tealdeer"   # provides tldr
+brew "yt-dlp"
+
+# --- Omarchy's TUIs ---
+# https://omarchy.org/manual/tuis/
+brew "lazygit"
+brew "lazydocker"
+brew "btop"
+brew "dua-cli"    # provides dua
+
+# --- Shell function dependencies ---
+brew "gum"        # gd confirmation prompt
+brew "fswatch"    # rsw file watcher, replaces Linux inotifywait
+brew "jq"
+brew "terminal-notifier" # remind and notice; prompts for notification permission on first use
+
+# --- Language runtimes ---
+brew "mise"       # Omarchy's runtime manager
+brew "nvm"        # still active in zsh/.zshrc; drop once projects move to mise
+
+# --- Casks the stowed configs need ---
+cask "ghostty"
+cask "font-jetbrains-mono-nerd-font"
+cask "aerospace"
+cask "firefox"    # Option+Shift+B in aerospace/.config/aerospace/aerospace.toml
