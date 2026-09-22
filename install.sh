@@ -6,15 +6,13 @@ DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TIMESTAMP="$(date -u +%Y%m%d%H%M%SZ)"
 BACKUP_DIR="$HOME/.dotfiles-backup-$TIMESTAMP"
 PROFILE_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/profile"
-GROUPS_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/groups"
 DEFAULT_PROFILE=work
 DEFAULT_THEME=catppuccin-macchiato
 
 # brew/Brewfile is the core list every Mac gets. Each group below adds
 # brew/Brewfile.<name> on top. A profile is a preset that picks groups;
-# --groups names them instead.
-ALL_GROUPS=(apps dev cloud media vm games personal)
-work_groups=(apps dev cloud)
+# --groups names them for one run instead.
+work_groups=(apps dev cloud office)
 personal_groups=(apps dev media vm games personal)
 groups=()
 
@@ -31,8 +29,6 @@ stow_targets=()
 available_targets=()
 backup_initialized=0
 profile=""
-groups_flag=""
-groups_flag_set=0
 run_brew=1
 run_defaults=1
 
@@ -53,18 +49,18 @@ retired_links=(
 )
 
 usage() {
-    cat <<'USAGE'
+    cat <<USAGE
 Usage: ./install.sh [--profile work|personal] [--groups a,b,c]
                    [--no-brew] [--no-defaults]
 
   --profile NAME  Which preset of package groups to install. "work" installs
-                  apps, dev and cloud. "personal" installs apps, dev, media,
-                  vm, games and personal. Both also install brew/Brewfile,
-                  which every Mac gets. The choice is saved to
+                  apps, dev, cloud and office. "personal" installs apps, dev,
+                  media, vm, games and personal. Both also install
+                  brew/Brewfile, which every Mac gets. The choice is saved to
                   ~/.config/dotfiles/profile and reused on later runs.
-  --groups LIST   Comma-separated group names, installed instead of the
-                  profile's preset. Saved to ~/.config/dotfiles/groups.
-                  Groups: apps dev cloud media vm games personal.
+  --groups LIST   Comma-separated group names to install this run, instead
+                  of the profile's preset. Not saved.
+                  Groups: $(available_groups | tr '\n' ' ' | sed 's/ $//').
                   --groups '' installs brew/Brewfile and nothing else.
   --no-brew       Stow the configs without installing any packages.
   --no-defaults   Leave the macOS system settings alone. Without this,
@@ -72,9 +68,8 @@ Usage: ./install.sh [--profile work|personal] [--groups a,b,c]
                   settings. It never deletes anything.
   -h, --help      Show this message.
 
-With no --profile, the saved profile is used, then $DOTFILES_PROFILE, then
-"work". Groups follow the same order: the flag, then $DOTFILES_GROUPS, then
-the saved file, then the profile's preset.
+With no --profile, the saved profile is used, then \$DOTFILES_PROFILE, then
+"work".
 
 Linux installs packages through the distro's package manager and ignores both
 the profile and the groups.
@@ -102,12 +97,10 @@ parse_args() {
                     exit 2
                 fi
                 groups_flag="$2"
-                groups_flag_set=1
                 shift 2
                 ;;
             --groups=*)
                 groups_flag="${1#*=}"
-                groups_flag_set=1
                 shift
                 ;;
             --no-brew)
@@ -162,46 +155,47 @@ resolve_profile() {
     fi
 }
 
-# Precedence matches the profile: the flag, then the environment, then the
-# saved file, then the profile's preset. An empty value is a real answer
-# meaning "core only", which is why this tracks whether the flag was given
-# rather than whether it is non-empty.
+# A group is a brew/Brewfile.<name>, so the files are the list. Reading them
+# here means adding a Brewfile is the whole job: there is no second list to
+# forget, which is how --groups office was rejected while the work profile
+# installed it.
+available_groups() {
+    local file
+    for file in "$DOTFILES_DIR"/brew/Brewfile.*; do
+        [ -r "$file" ] || continue
+        printf '%s\n' "${file##*/Brewfile.}"
+    done
+}
+
+# --groups is for one run and is not saved; the profile is what persists.
+# An empty --groups is a real answer meaning "core only", so this tests
+# whether the flag was given rather than whether it is non-empty. Only a
+# typed name is checked; a preset naming a Brewfile that is not there is a
+# bug in this script, which ensure_macos_deps reports as it installs.
 resolve_groups() {
-    local raw=""
-    local from_flag=0
+    if [ -n "${groups_flag+x}" ]; then
+        local known=() raw=() name
+        while IFS= read -r name; do
+            known+=("$name")
+        done < <(available_groups)
 
-    if [ "$groups_flag_set" -eq 1 ]; then
-        raw="$groups_flag"
-        from_flag=1
-    elif [ -n "${DOTFILES_GROUPS+x}" ]; then
-        raw="$DOTFILES_GROUPS"
-    elif [ -r "$GROUPS_FILE" ]; then
-        raw="$(tr -d '[:space:]' < "$GROUPS_FILE")"
+        IFS=, read -ra raw <<< "$groups_flag"
+
+        groups=()
+        for name in ${raw[@]+"${raw[@]}"}; do
+            [ -n "$name" ] || continue
+
+            if ! path_in_list "$name" ${known[@]+"${known[@]}"}; then
+                echo "Unknown group '$name'. Use: ${known[*]}" >&2
+                exit 2
+            fi
+
+            groups+=("$name")
+        done
+    elif [ "$profile" = work ]; then
+        groups=("${work_groups[@]}")
     else
-        case "$profile" in
-            work) groups=("${work_groups[@]}") ;;
-            personal) groups=("${personal_groups[@]}") ;;
-        esac
-        return
-    fi
-
-    local name
-    while IFS= read -r name; do
-        [ -n "$name" ] || continue
-
-        if ! path_in_list "$name" "${ALL_GROUPS[@]}"; then
-            echo "Unknown group '$name'. Use: ${ALL_GROUPS[*]}" >&2
-            exit 2
-        fi
-
-        groups+=("$name")
-    done <<< "$(printf '%s' "$raw" | tr ',' '\n')"
-
-    # Only a flag rewrites the saved value, so exporting DOTFILES_GROUPS for
-    # one run does not change what the machine gets from then on.
-    if [ "$from_flag" -eq 1 ]; then
-        mkdir -p "$(dirname "$GROUPS_FILE")"
-        printf '%s\n' "${groups[*]+${groups[*]}}" | tr ' ' ',' > "$GROUPS_FILE"
+        groups=("${personal_groups[@]}")
     fi
 }
 
@@ -322,13 +316,8 @@ ensure_macos_deps() {
     echo "Installing core packages (profile: $profile)."
     brew bundle --file "$DOTFILES_DIR/brew/Brewfile"
 
-    if [ ${#groups[@]} -eq 0 ]; then
-        echo "No package groups selected."
-        return
-    fi
-
     local group file
-    for group in "${groups[@]}"; do
+    for group in ${groups[@]+"${groups[@]}"}; do
         file="$DOTFILES_DIR/brew/Brewfile.$group"
 
         if [ ! -r "$file" ]; then
@@ -465,22 +454,6 @@ remove_retired_links
 #   - Library/Application Support holds app data beside Ghostty's config.
 stow --restow --no-folding --dir "$DOTFILES_DIR" --target "$HOME" "${available_targets[@]}"
 
-# Finder, keyboard and pointer settings. Only the groups that reproduce this
-# setup; macos/defaults --list shows the rest, which stay manual because they
-# change things a machine may reasonably want left alone. Nothing here deletes
-# a file: folders Finder has already recorded keep their own view until
-# 'macos/defaults --reset-folder-views' is run by hand.
-apply_macos_defaults() {
-    [ "$(uname -s)" = Darwin ] || return 0
-
-    if [ "$run_defaults" -eq 0 ]; then
-        echo "Skipping macOS system settings (--no-defaults)."
-        return 0
-    fi
-
-    "$DOTFILES_DIR/macos/defaults"
-}
-
 # Ghostty, tmux, btop and Neovim read their colours from files that
 # 'theme set' generates. Seed one so a fresh machine is not unthemed, but
 # never overwrite a theme this machine already chose.
@@ -496,7 +469,15 @@ seed_theme() {
 }
 
 seed_theme
-apply_macos_defaults
+
+# Finder, keyboard and pointer settings. Only the groups that reproduce this
+# setup; macos/defaults --list shows the rest, which stay manual because they
+# change things a machine may reasonably want left alone. Nothing here deletes
+# a file: folders Finder has already recorded keep their own view until
+# 'macos/defaults --reset-folder-views' is run by hand.
+if [ "$(uname -s)" = Darwin ] && [ "$run_defaults" -eq 1 ]; then
+    "$DOTFILES_DIR/macos/defaults"
+fi
 
 if [ "$backup_initialized" -eq 1 ]; then
     echo "Stow installation complete. Conflicting files were backed up to $BACKUP_DIR"

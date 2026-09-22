@@ -49,10 +49,10 @@ Everything else is a group, installed on top of core.
 | [games](brew/Brewfile.games)       | Steam                                                          |       |    ✓     |
 | [personal](brew/Brewfile.personal) | Maccy, LocalSend, ProtonVPN                                    |       |    ✓     |
 
-To pick groups instead of taking the profile's preset:
+To pick groups for one run instead of taking the profile's preset:
 
 ```bash
-./install.sh --groups dev,cloud   # saved to ~/.config/dotfiles/groups
+./install.sh --groups dev,cloud
 ./install.sh --groups ''          # core only
 ```
 

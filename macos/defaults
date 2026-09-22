@@ -1,36 +1,30 @@
 #!/usr/bin/env bash
 #
-# Apply this setup's macOS system settings.
-#
-#   defaults                       apply the install groups: finder keyboard pointer
-#   defaults GROUP [GROUP...]      apply only the groups named
-#   defaults --list                list every group and what it changes
-#   defaults --backup              export the domains below before changing them
-#   defaults --reset-folder-views  clear the per-folder Finder records under $HOME
-#
-# install.sh runs this with no arguments on macOS. The groups it leaves out
-# change things a machine may reasonably want left alone, so run those by hand.
-#
-# Ported from the macos-defaults scripts in os-install-scripts, which this
-# replaces.
+# Apply this setup's macOS system settings. Ported from the macos-defaults
+# scripts in os-install-scripts, which this replaces. --help lists the calls.
 
 set -euo pipefail
 
-INSTALL_GROUPS=(finder keyboard pointer)
-ALL_GROUPS=(finder keyboard pointer dock text hidden scroll)
-
-# Every domain this script writes to, for --backup.
-DOMAINS=(-g com.apple.finder com.apple.dock)
-
 usage() {
-    sed -n '3,15p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+    cat <<'USAGE'
+Apply this setup's macOS system settings.
+
+  defaults                       apply the install groups: finder keyboard pointer
+  defaults GROUP [GROUP...]      apply only the groups named
+  defaults --list                list every group and what it changes
+  defaults --backup              export the domains below before changing them
+  defaults --reset-folder-views  clear the per-folder Finder records under $HOME
+
+install.sh runs this with no arguments on macOS. The groups it leaves out
+change things a machine may reasonably want left alone, so run those by hand.
+USAGE
 }
 
 list_groups() {
     cat <<'LIST'
 Applied by install.sh:
   finder    List view, folders above files, path and status bars, file extensions
-  keyboard  F1-F12 as function keys, fast repeat, tab through every control
+  keyboard  F1-F12 as function keys, fast repeat, held keys repeat, tab through every control
   pointer   Pointer speed
 
 Run by hand:
@@ -153,6 +147,9 @@ group_scroll() {
     echo "Scrolling: traditional. Log out and back in to apply."
 }
 
+# Every domain this script writes to, for --backup.
+DOMAINS=(-g com.apple.finder com.apple.dock)
+
 backup() {
     local dir
     dir="$HOME/.dotfiles-backup-$(date -u +%Y%m%d%H%M%SZ)/defaults"
@@ -224,30 +221,15 @@ case "${1:-}" in
         ;;
 esac
 
-requested=()
-if [ "$#" -eq 0 ]; then
-    requested=("${INSTALL_GROUPS[@]}")
-else
-    for arg in "$@"; do
-        found=0
-        for group in "${ALL_GROUPS[@]}"; do
-            if [ "$arg" = "$group" ]; then
-                found=1
-                break
-            fi
-        done
-
-        if [ "$found" -eq 0 ]; then
-            echo "Unknown group '$arg'." >&2
-            echo >&2
-            list_groups >&2
-            exit 2
-        fi
-
-        requested+=("$arg")
-    done
-fi
+requested=("$@")
+[ "$#" -gt 0 ] || requested=(finder keyboard pointer)
 
 for group in "${requested[@]}"; do
+    if ! declare -F "group_$group" >/dev/null; then
+        echo "Unknown group '$group'." >&2
+        list_groups >&2
+        exit 2
+    fi
+
     "group_$group"
 done

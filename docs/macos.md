@@ -40,17 +40,17 @@ not hiding it.
 `macos/defaults` writes the settings this setup expects. `install.sh` runs it with no arguments, which applies three
 groups.
 
-| Group      | Changes                                                                        |
-| ---------- | ------------------------------------------------------------------------------ |
-| `finder`   | List view, folders above files, path and status bars, visible file extensions  |
-| `keyboard` | F1 to F12 as function keys, fast key repeat, tab through every control         |
-| `pointer`  | Pointer speed                                                                  |
+| Group      | Changes                                                                                  |
+| ---------- | ---------------------------------------------------------------------------------------- |
+| `finder`   | List view, folders above files, path and status bars, visible file extensions            |
+| `keyboard` | F1 to F12 as function keys, fast key repeat, held keys repeat, tab through every control |
+| `pointer`  | Pointer speed                                                                            |
 
 Four more groups stay manual, because each one changes something a machine may want left alone:
 
 ```bash
 ./macos/defaults dock      # auto-hide with no reveal delay
-./macos/defaults text      # autocorrect and smart quotes, dashes and capitals off
+./macos/defaults text      # autocorrect and smart quotes, dashes, capitals and periods off
 ./macos/defaults hidden    # show hidden files in Finder
 ./macos/defaults scroll    # traditional scrolling, so natural scrolling off
 ```
@@ -81,5 +81,5 @@ touched, so external and network volumes keep their records.
 
 ## Personal-profile apps
 
-`brew/Brewfile.personal` adds two apps that fill gaps in macOS. Maccy keeps clipboard history and opens with
-`Command+Shift+C`. LocalSend sends files to other machines on the network.
+`brew/Brewfile.personal` adds Maccy, LocalSend and ProtonVPN. The first two fill gaps in macOS: Maccy keeps clipboard
+history and opens with `Command+Shift+C`, and LocalSend sends files to other machines on the network.
