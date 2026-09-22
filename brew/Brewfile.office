@@ -1,0 +1,6 @@
+# Microsoft 365. The work profile installs this group.
+# Install with: brew bundle --file brew/Brewfile.office
+
+cask "microsoft-office"
+cask "microsoft-teams"
+cask "microsoft-365-copilot"

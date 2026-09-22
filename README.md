@@ -38,15 +38,16 @@ core needs an engine to talk to.
 
 Everything else is a group, installed on top of core.
 
-| Group                              | Contents                                        | work | personal |
-| ---------------------------------- | ----------------------------------------------- | :--: | :------: |
-| [apps](brew/Brewfile.apps)         | ChatGPT, Tailscale                              |  ✓   |    ✓     |
-| [dev](brew/Brewfile.dev)           | Build tools, diagrams, VS Code, Toolbox, Chrome |  ✓   |    ✓     |
-| [cloud](brew/Brewfile.cloud)       | Azure CLI, azd, .NET SDK, Edge                  |  ✓   |          |
-| [media](brew/Brewfile.media)       | BlackHole 2ch and 16ch                          |      |    ✓     |
-| [vm](brew/Brewfile.vm)             | UTM                                             |      |    ✓     |
-| [games](brew/Brewfile.games)       | Steam                                           |      |    ✓     |
-| [personal](brew/Brewfile.personal) | Maccy, LocalSend, ProtonVPN                     |      |    ✓     |
+| Group                              | Contents                                                       | work  | personal |
+| ---------------------------------- | -------------------------------------------------------------- | :---: | :------: |
+| [apps](brew/Brewfile.apps)         | ChatGPT, Tailscale                                             |   ✓   |    ✓     |
+| [dev](brew/Brewfile.dev)           | Build tools, diagrams, coding agents, VS Code, Toolbox, Chrome |   ✓   |    ✓     |
+| [cloud](brew/Brewfile.cloud)       | Azure CLI, azd, .NET SDK, Edge                                 |   ✓   |          |
+| [office](brew/Brewfile.office)     | Microsoft Office, Teams, 365 Copilot                           |   ✓   |          |
+| [media](brew/Brewfile.media)       | BlackHole 2ch and 16ch                                         |       |    ✓     |
+| [vm](brew/Brewfile.vm)             | UTM                                                            |       |    ✓     |
+| [games](brew/Brewfile.games)       | Steam                                                          |       |    ✓     |
+| [personal](brew/Brewfile.personal) | Maccy, LocalSend, ProtonVPN                                    |       |    ✓     |
 
 To pick groups instead of taking the profile's preset:
 

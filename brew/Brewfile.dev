@@ -16,6 +16,14 @@ brew "ollama"      # local models, served on 127.0.0.1:11434
 brew "wget"
 brew "tree"
 brew "gnu-tar"
+brew "scc"         # code counter
+
+# --- Coding agents ---
+cask "claude"      # the desktop app
+cask "claude-code"
+cask "codex-app"   # the desktop app
+cask "codex"       # the CLI
+cask "copilot-cli"
 
 # MarkItDown has no formula. It came from os-install-scripts, where a script
 # installed it with pipx. uv is above, so this is the one-line equivalent:

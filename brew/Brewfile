@@ -2,6 +2,8 @@
 # Install with: brew bundle --file brew/Brewfile
 # install.sh runs this for you.
 
+tap "nikitabobko/tap" # AeroSpace's own tap; it is not in homebrew/cask
+
 # --- Stow and the configs it links ---
 brew "stow"
 brew "tmux"
@@ -55,6 +57,6 @@ brew "nvm"        # still active in zsh/.zshrc; drop once projects move to mise
 # --- Casks the stowed configs need ---
 cask "ghostty"
 cask "font-jetbrains-mono-nerd-font"
-cask "aerospace"
+cask "nikitabobko/tap/aerospace", trusted: true # Homebrew 7 refuses third-party casks until trusted
 cask "firefox"    # Option+Shift+B in aerospace/.config/aerospace/aerospace.toml
 cask "docker-desktop" # lazydocker above does nothing without an engine to talk to
