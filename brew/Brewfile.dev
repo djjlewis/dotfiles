@@ -1,0 +1,31 @@
+# Development toolchain. Both profiles install this group, because both
+# machines are written on. Omarchy ships Neovim as its editor, which is why the
+# GUI editors below are here and not in brew/Brewfile.
+# Install with: brew bundle --file brew/Brewfile.dev
+
+# --- Build tools and runtimes mise does not cover ---
+brew "cmake"
+brew "node"
+brew "uv"          # Python environments and single-file scripts
+brew "pipx"
+brew "sqlite"
+brew "actionlint"  # lints GitHub Actions workflows
+brew "ollama"      # local models, served on 127.0.0.1:11434
+
+# --- Shell tools the GNU aliases in zsh/.zshrc do not cover ---
+brew "wget"
+brew "tree"
+brew "gnu-tar"
+
+# MarkItDown has no formula. It came from os-install-scripts, where a script
+# installed it with pipx. uv is above, so this is the one-line equivalent:
+#   uv tool install markitdown       # or markitdown[all] for every converter
+
+# --- Diagrams ---
+brew "graphviz"    # plantuml renders every diagram but sequence through this
+brew "plantuml"
+
+# --- GUI ---
+cask "visual-studio-code"
+cask "jetbrains-toolbox"
+cask "google-chrome"  # the dev browser. Firefox in brew/Brewfile is the default one

@@ -1,0 +1,9 @@
+# Audio routing for recording and backing tracks. The personal profile
+# installs this group.
+# Install with: brew bundle --file brew/Brewfile.media
+#
+# REAPER is installed by hand on this machine, so it is deliberately not here.
+# Add `cask "reaper"` if you would rather brew owned it.
+
+cask "blackhole-2ch"   # loopback audio device, two channels
+cask "blackhole-16ch"  # the same with sixteen, for multitrack routing

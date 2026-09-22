@@ -15,22 +15,60 @@ On a new Mac, install [Homebrew](https://brew.sh), clone this repo, and run the 
 
 The script:
 
-- Installs [brew/Brewfile](brew/Brewfile) with `brew bundle`. The personal profile also installs
-  [brew/Brewfile.personal](brew/Brewfile.personal), which adds Maccy and LocalSend. The work profile skips it.
+- Installs [brew/Brewfile](brew/Brewfile) with `brew bundle`, then the package groups the profile selects. See
+  [Package groups](#package-groups).
 - Stows the packages below into your home directory. Any file already in the way is moved to
   `~/.dotfiles-backup-<timestamp>` first.
 - Removes symlinks left behind by packages this repo no longer manages.
 - Applies the `catppuccin-macchiato` theme if the machine has no theme yet.
+- Runs [macos/defaults](macos/defaults) on macOS, which sets the Finder, keyboard and pointer settings. It changes
+  preferences only and deletes nothing. `--no-defaults` skips it, and [the macOS guide](docs/macos.md) covers the
+  groups it leaves for you to run.
 
 The profile is saved to `~/.config/dotfiles/profile`, so later runs need no arguments. `--no-brew` stows the configs
 without touching packages. On Linux the script stows the shared packages and installs the shell toolchain with pacman or
 apt.
 
+## Package groups
+
+[brew/Brewfile](brew/Brewfile) is the core list every Mac gets. It holds what the stowed configs need, plus the shell
+tools and TUIs from [Omarchy's base package list](https://github.com/omacom/omarchy/blob/quattro/install/omarchy-base.packages).
+Docker, ImageMagick and ffmpeg are in core for the same reason: Omarchy installs them by default, and `lazydocker` in
+core needs an engine to talk to.
+
+Everything else is a group, installed on top of core.
+
+| Group                              | Contents                                        | work | personal |
+| ---------------------------------- | ----------------------------------------------- | :--: | :------: |
+| [apps](brew/Brewfile.apps)         | ChatGPT, Tailscale                              |  ✓   |    ✓     |
+| [dev](brew/Brewfile.dev)           | Build tools, diagrams, VS Code, Toolbox, Chrome |  ✓   |    ✓     |
+| [cloud](brew/Brewfile.cloud)       | Azure CLI, azd, .NET SDK, Edge                  |  ✓   |          |
+| [media](brew/Brewfile.media)       | BlackHole 2ch and 16ch                          |      |    ✓     |
+| [vm](brew/Brewfile.vm)             | UTM                                             |      |    ✓     |
+| [games](brew/Brewfile.games)       | Steam                                           |      |    ✓     |
+| [personal](brew/Brewfile.personal) | Maccy, LocalSend, ProtonVPN                     |      |    ✓     |
+
+To pick groups instead of taking the profile's preset:
+
+```bash
+./install.sh --groups dev,cloud   # saved to ~/.config/dotfiles/groups
+./install.sh --groups ''          # core only
+```
+
+One group on its own, without running the installer:
+
+```bash
+brew bundle --file brew/Brewfile.media
+```
+
+Firefox is the default browser and lives in core, because the AeroSpace config binds it. Chrome is in `dev` and Edge is
+in `cloud`. Neovim is the editor in core, which is why VS Code and JetBrains Toolbox are a group rather than core.
+
 ## Guides
 
 | Guide                          | Covers                                                              |
 | ------------------------------ | ------------------------------------------------------------------- |
-| [macOS](docs/macos.md)         | Settings panel keys, reminders, notices, notifications              |
+| [macOS](docs/macos.md)         | System settings, Finder layout, panel keys, reminders, notices      |
 | [AeroSpace](docs/aerospace.md) | Window, workspace and launcher keys                                 |
 | [Ghostty](docs/ghostty.md)     | Terminal keys, font, and the `ghostty` launcher                     |
 | [Shell](docs/shell.md)         | zsh aliases, fzf, zoxide, and the worktree, ssh and rsync functions |

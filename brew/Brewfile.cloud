@@ -1,0 +1,7 @@
+# Azure and .NET. The work profile installs this group.
+# Install with: brew bundle --file brew/Brewfile.cloud
+
+brew "azure-cli"
+brew "azure-dev"      # provides azd
+cask "dotnet-sdk"
+cask "microsoft-edge" # the browser the Azure portal signs in to cleanly

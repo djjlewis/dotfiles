@@ -43,6 +43,11 @@ brew "fswatch"    # rsw file watcher, replaces Linux inotifywait
 brew "jq"
 brew "terminal-notifier" # remind and notice; prompts for notification permission on first use
 
+# --- Media tools ---
+# Both are in Omarchy's base package list, or pulled in by what is.
+brew "imagemagick"
+brew "ffmpeg"
+
 # --- Language runtimes ---
 brew "mise"       # Omarchy's runtime manager
 brew "nvm"        # still active in zsh/.zshrc; drop once projects move to mise
@@ -52,3 +57,4 @@ cask "ghostty"
 cask "font-jetbrains-mono-nerd-font"
 cask "aerospace"
 cask "firefox"    # Option+Shift+B in aerospace/.config/aerospace/aerospace.toml
+cask "docker-desktop" # lazydocker above does nothing without an engine to talk to

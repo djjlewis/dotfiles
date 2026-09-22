@@ -1,0 +1,6 @@
+# Desktop apps that are not tied to a machine's purpose. Both profiles install
+# this group.
+# Install with: brew bundle --file brew/Brewfile.apps
+
+cask "chatgpt"
+cask "tailscale-app"  # mesh VPN, reaches the other machines on the tailnet

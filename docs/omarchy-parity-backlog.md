@@ -41,11 +41,11 @@ Omarchy turns CapsLock into a compose key, so `CapsLock M S` types an emoji and 
 address. The completions map onto macOS Text Replacement, which syncs through iCloud. The emoji chords need
 Karabiner-Elements, which installs a driver that sees every keystroke. That was considered and left out.
 
-## macOS defaults
+## Screenshot location
 
 Omarchy saves screenshots to `~/Pictures`; macOS saves them to the Desktop.
-`defaults write com.apple.screencapture location ~/Pictures` followed by `killall SystemUIServer` matches it. There is
-no defaults script in this repo yet, and that is the first thing that would go in one.
+`defaults write com.apple.screencapture location ~/Pictures` followed by `killall SystemUIServer` matches it. That is
+two lines in a new `screenshots` group in `macos/defaults`, which now holds the rest of the system settings.
 
 ## App launchers
 

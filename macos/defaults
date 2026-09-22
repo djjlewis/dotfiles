@@ -1,0 +1,253 @@
+#!/usr/bin/env bash
+#
+# Apply this setup's macOS system settings.
+#
+#   defaults                       apply the install groups: finder keyboard pointer
+#   defaults GROUP [GROUP...]      apply only the groups named
+#   defaults --list                list every group and what it changes
+#   defaults --backup              export the domains below before changing them
+#   defaults --reset-folder-views  clear the per-folder Finder records under $HOME
+#
+# install.sh runs this with no arguments on macOS. The groups it leaves out
+# change things a machine may reasonably want left alone, so run those by hand.
+#
+# Ported from the macos-defaults scripts in os-install-scripts, which this
+# replaces.
+
+set -euo pipefail
+
+INSTALL_GROUPS=(finder keyboard pointer)
+ALL_GROUPS=(finder keyboard pointer dock text hidden scroll)
+
+# Every domain this script writes to, for --backup.
+DOMAINS=(-g com.apple.finder com.apple.dock)
+
+usage() {
+    sed -n '3,15p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+}
+
+list_groups() {
+    cat <<'LIST'
+Applied by install.sh:
+  finder    List view, folders above files, path and status bars, file extensions
+  keyboard  F1-F12 as function keys, fast repeat, tab through every control
+  pointer   Pointer speed
+
+Run by hand:
+  dock      Auto-hide with no reveal delay
+  text      Turn off autocorrect and smart quotes, dashes, capitals and periods
+  hidden    Show hidden files in Finder
+  scroll    Traditional scrolling, so natural scrolling off
+LIST
+}
+
+# The list-view template a folder inherits when Finder has no record of it:
+# name, date modified and size, sorted by name. Written as a plist because the
+# column order is an array, which `defaults write` cannot build from the
+# command line. The widths add up to 450 because AeroSpace tiles Finder, so a
+# window is usually half a screen wide and loses another 180 to the sidebar.
+# Wider columns than that and the name column is the one that gets cut off.
+list_view_template() {
+    cat <<'PLIST'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>calculateAllSizes</key><false/>
+  <key>iconSize</key><integer>16</integer>
+  <key>textSize</key><integer>13</integer>
+  <key>showIconPreview</key><true/>
+  <key>useRelativeDates</key><true/>
+  <key>sortColumn</key><string>name</string>
+  <key>viewOptionsVersion</key><integer>1</integer>
+  <key>columns</key>
+  <array>
+    <dict>
+      <key>identifier</key><string>name</string>
+      <key>ascending</key><true/><key>visible</key><true/><key>width</key><integer>250</integer>
+    </dict>
+    <dict>
+      <key>identifier</key><string>dateModified</string>
+      <key>ascending</key><false/><key>visible</key><true/><key>width</key><integer>130</integer>
+    </dict>
+    <dict>
+      <key>identifier</key><string>size</string>
+      <key>ascending</key><false/><key>visible</key><true/><key>width</key><integer>70</integer>
+    </dict>
+    <dict>
+      <key>identifier</key><string>kind</string>
+      <key>ascending</key><true/><key>visible</key><false/><key>width</key><integer>115</integer>
+    </dict>
+  </array>
+</dict>
+</plist>
+PLIST
+}
+
+group_finder() {
+    # Every folder Finder has displayed keeps its own view, sort order and
+    # column widths in that folder's .DS_Store, and that record beats all of
+    # this. These settings decide what a folder gets when Finder has no record
+    # of it. --reset-folder-views clears the records, which is what makes
+    # folders you have already opened fall back to these too.
+    defaults write com.apple.finder FXPreferredViewStyle -string Nlsv
+    defaults write com.apple.finder FXPreferredSearchViewStyle -string Nlsv
+    defaults write com.apple.finder _FXSortFoldersFirst -bool true
+    defaults write com.apple.finder ShowPathbar -bool true
+    defaults write com.apple.finder ShowStatusBar -bool true
+    defaults write -g AppleShowAllExtensions -bool true
+
+    # macOS 26 reads the list-view template from the FK_ keys and older
+    # versions from StandardViewSettings. Writing all three covers whichever
+    # version this machine runs without testing for it.
+    local template
+    template="$(list_view_template)"
+    defaults write com.apple.finder FK_DefaultListViewSettingsV2 "$template"
+    defaults write com.apple.finder FK_StandardViewSettings -dict-add ExtendedListViewSettingsV2 "$template"
+    defaults write com.apple.finder StandardViewSettings -dict-add ExtendedListViewSettingsV2 "$template"
+
+    killall Finder >/dev/null 2>&1 || true
+    echo "Finder: list view, folders first, sorted by name."
+}
+
+group_keyboard() {
+    defaults write -g com.apple.keyboard.fnState -bool true
+    defaults write -g AppleKeyboardUIMode -int 2
+    defaults write -g InitialKeyRepeat -int 25
+    defaults write -g KeyRepeat -int 3
+    # Holding a letter repeats it instead of offering accented characters,
+    # which is what makes held hjkl work the way Neovim expects.
+    defaults write -g ApplePressAndHoldEnabled -bool false
+    echo "Keyboard: function keys, fast repeat. Applications pick this up on relaunch."
+}
+
+group_pointer() {
+    defaults write -g com.apple.mouse.scaling -float 3
+    echo "Pointer: speed set. Log out and back in to apply everywhere."
+}
+
+group_dock() {
+    defaults write com.apple.dock autohide -bool true
+    defaults write com.apple.dock autohide-delay -float 0
+    killall Dock >/dev/null 2>&1 || true
+    echo "Dock: auto-hide with no reveal delay."
+}
+
+group_text() {
+    defaults write -g NSAutomaticCapitalizationEnabled -bool false
+    defaults write -g NSAutomaticQuoteSubstitutionEnabled -bool false
+    defaults write -g NSAutomaticDashSubstitutionEnabled -bool false
+    defaults write -g NSAutomaticPeriodSubstitutionEnabled -bool false
+    defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
+    echo "Text: substitution and autocorrect off. Applications pick this up on relaunch."
+}
+
+group_hidden() {
+    defaults write com.apple.finder AppleShowAllFiles -bool true
+    killall Finder >/dev/null 2>&1 || true
+    echo "Finder: hidden files shown."
+}
+
+group_scroll() {
+    defaults write -g com.apple.swipescrolldirection -bool false
+    echo "Scrolling: traditional. Log out and back in to apply."
+}
+
+backup() {
+    local dir
+    dir="$HOME/.dotfiles-backup-$(date -u +%Y%m%d%H%M%SZ)/defaults"
+    mkdir -p "$dir"
+
+    local domain name
+    for domain in "${DOMAINS[@]}"; do
+        name="${domain/-g/NSGlobalDomain}"
+        defaults export "$domain" "$dir/$name.plist" 2>/dev/null || true
+    done
+
+    echo "Exported to $dir"
+    echo "Restore one with: defaults import DOMAIN $dir/DOMAIN.plist"
+}
+
+# Finder rebuilds a .DS_Store the next time it shows the folder, so this does
+# not stop folders remembering anything; it drops what they remember now, and
+# with it the window positions, icon arrangements and column widths already
+# recorded. Only $HOME, so nothing on an external or network volume is touched.
+reset_folder_views() {
+    local count
+    count="$(find "$HOME" -name .DS_Store -type f 2>/dev/null | wc -l | tr -d ' ')"
+
+    if [ "$count" -eq 0 ]; then
+        echo "No per-folder Finder records under $HOME."
+        return
+    fi
+
+    echo "This removes $count .DS_Store files under $HOME. Every folder then"
+    echo "takes the settings above, and loses the window position, icon"
+    echo "arrangement and column widths Finder recorded for it."
+    printf 'Continue? [y/N] '
+    local reply
+    read -r reply
+    case "$reply" in
+        y|Y|yes|Yes) ;;
+        *)
+            echo "Left alone."
+            return
+            ;;
+    esac
+
+    find "$HOME" -name .DS_Store -type f -delete 2>/dev/null || true
+    killall Finder >/dev/null 2>&1 || true
+    echo "Removed. Finder restarted."
+}
+
+if [ "$(uname -s)" != Darwin ]; then
+    echo "This only runs on macOS." >&2
+    exit 1
+fi
+
+case "${1:-}" in
+    -h|--help)
+        usage
+        exit 0
+        ;;
+    --list)
+        list_groups
+        exit 0
+        ;;
+    --backup)
+        backup
+        exit 0
+        ;;
+    --reset-folder-views)
+        reset_folder_views
+        exit 0
+        ;;
+esac
+
+requested=()
+if [ "$#" -eq 0 ]; then
+    requested=("${INSTALL_GROUPS[@]}")
+else
+    for arg in "$@"; do
+        found=0
+        for group in "${ALL_GROUPS[@]}"; do
+            if [ "$arg" = "$group" ]; then
+                found=1
+                break
+            fi
+        done
+
+        if [ "$found" -eq 0 ]; then
+            echo "Unknown group '$arg'." >&2
+            echo >&2
+            list_groups >&2
+            exit 2
+        fi
+
+        requested+=("$arg")
+    done
+fi
+
+for group in "${requested[@]}"; do
+    "group_$group"
+done

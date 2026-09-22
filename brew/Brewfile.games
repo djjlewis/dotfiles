@@ -1,0 +1,4 @@
+# The personal profile installs this group.
+# Install with: brew bundle --file brew/Brewfile.games
+
+cask "steam"

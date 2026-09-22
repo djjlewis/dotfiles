@@ -1,6 +1,7 @@
-# Personal-machine extras. Skipped on the work profile.
-# Install with: ./install.sh --profile personal
-# These fill gaps where macOS has no equivalent of an Omarchy feature.
+# Personal-machine extras. The personal profile installs this group.
+# Install with: brew bundle --file brew/Brewfile.personal
+# The first two fill gaps where macOS has no equivalent of an Omarchy feature.
 
 cask "maccy"      # clipboard history, Omarchy's Super+Ctrl+V
 cask "localsend"  # local network file transfer, Omarchy's Super+Ctrl+S
+cask "protonvpn"
