@@ -54,7 +54,7 @@ with an `on-window-detected` block. `aerospace list-apps` prints the app IDs.
 
 | Key                 | Opens                                       |
 | ------------------- | ------------------------------------------- |
-| `Option+Enter`      | A new Ghostty window                        |
+| `Option+Shift+Enter` | A new Ghostty window                        |
 | `Option+Ctrl+Enter` | Ghostty attached to the `Work` tmux session |
 | `Option+Ctrl+T`     | btop in Ghostty                             |
 | `Option+Shift+N`    | Neovim in Ghostty                           |
@@ -62,6 +62,9 @@ with an `on-window-detected` block. `aerospace list-apps` prints the app IDs.
 | `Option+Shift+B`    | Firefox                                     |
 | `Option+Shift+F`    | Finder                                      |
 | `Option+Shift+A`    | ChatGPT                                     |
+
+`Option+Enter` is left alone. JetBrains puts Show Intention Actions there, and a global grab would take it from
+every project.
 
 The keys that open System Settings panels, reminders and notices are in the [macOS guide](macos.md).
 

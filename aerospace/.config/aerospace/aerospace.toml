@@ -220,7 +220,7 @@ run = 'move-node-to-workspace W4'
     alt-ctrl-semicolon = 'mode service'
 
     # Omarchy's terminal and tmux terminal launchers, using Option as Super.
-    alt-enter = 'exec-and-forget open -n -a Ghostty'
+    alt-shift-enter = 'exec-and-forget open -n -a Ghostty'
     alt-ctrl-enter = 'exec-and-forget "$HOME/.local/bin/ghostty" -e tmux new-session -A -s Work'
     alt-ctrl-t = 'exec-and-forget "$HOME/.local/bin/ghostty" -e btop'
     alt-shift-b = 'exec-and-forget open -a Firefox'
@@ -228,8 +228,10 @@ run = 'move-node-to-workspace W4'
     alt-shift-n = 'exec-and-forget "$HOME/.local/bin/ghostty" -e nvim'
     alt-shift-d = 'exec-and-forget "$HOME/.local/bin/ghostty" -e lazydocker'
     alt-shift-a = 'exec-and-forget open -a ChatGPT'
-    # Option+Shift+Enter stays unbound so Ghostty receives its own
-    # alt+shift+enter=csi:13;4u binding. Option+Enter opens a window.
+    # DIFFERS FROM OMARCHY: the terminal is Option+Shift+Enter, not
+    # Option+Enter. JetBrains puts Show Intention Actions on Option+Enter
+    # and a global grab would take it from every project. Ghostty's own
+    # alt+shift+enter code moves to Command+Option+Enter to make room.
 
     # --- Omarchy's system panels (Super+Ctrl+letter) ---
     # macOS System Settings panes. These identifiers exist on macOS 15 and 26.

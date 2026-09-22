@@ -4,6 +4,12 @@ font-size = 14
 background-opacity = 0.9
 macos-option-as-alt = true
 keybind = alt+3=text:#
+
+# AeroSpace grabs Option+Shift+Enter for a new window, so the shared config's
+# alt+shift+enter=csi:13;4u never reaches Ghostty on this machine. Send the
+# same code from Command+Option+Enter instead. Command+Shift+Enter is not
+# free: Ghostty zooms a split with it.
+keybind = super+alt+enter=csi:13;4u
 auto-update = check
 
 # Ctrl+D closes the last window and quits, as Alacritty did. macOS defaults

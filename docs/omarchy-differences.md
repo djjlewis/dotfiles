@@ -26,19 +26,20 @@ Two consequences:
 [AeroSpace](https://nikitabobko.github.io/AeroSpace/) replaces Hyprland. The [AeroSpace guide](aerospace.md) has the
 full key list.
 
-| Omarchy                              | Here                                       | Why                                                    |
-| ------------------------------------ | ------------------------------------------ | ------------------------------------------------------ |
-| `Super+Arrow` focus                  | `Option+H/J/K/L`                           | Option+Arrow belongs to text editing                   |
-| `Super+Shift+Arrow` swap             | `Option+Shift+H/J/K/L`                     | Same                                                   |
-| `Super+Tab` next workspace           | `Option+Tab` returns to the previous one   | Predates the Omarchy work, kept                        |
-| `Alt+Tab` cycle windows              | `Option+Ctrl+Tab`, `Option+Ctrl+Shift+Tab` | Option+Tab is taken by the line above                  |
-| `Super+S` / `Super+Grave` scratchpad | `Option+Backtick` toggles workspace `S`    | AeroSpace has no dropdown workspace                    |
-| `Super+Alt+S` move to scratchpad     | `Option+Shift+Backtick`                    | Same                                                   |
-| `Super+1` to `0`                     | `Option+1` to `0` within the current bank  | See workspace banks below                              |
-| `Super+Alt+Return` tmux terminal     | `Option+Ctrl+Enter`                        | Alt has no key left once Option plays Super            |
-| `Super+Ctrl+Return` Herdr            | Unbound                                    | Herdr has no macOS package                             |
-| `Super+Shift+Return` browser         | `Option+Shift+B`                           | `Option+Shift+Enter` is left for Ghostty's own binding |
-| `Super+Shift+M` Spotify              | Unbound                                    | Not installed                                          |
+| Omarchy                              | Here                                       | Why                                                     |
+| ------------------------------------ | ------------------------------------------ | ------------------------------------------------------- |
+| `Super+Arrow` focus                  | `Option+H/J/K/L`                           | Option+Arrow belongs to text editing                    |
+| `Super+Shift+Arrow` swap             | `Option+Shift+H/J/K/L`                     | Same                                                    |
+| `Super+Tab` next workspace           | `Option+Tab` returns to the previous one   | Predates the Omarchy work, kept                         |
+| `Alt+Tab` cycle windows              | `Option+Ctrl+Tab`, `Option+Ctrl+Shift+Tab` | Option+Tab is taken by the line above                   |
+| `Super+S` / `Super+Grave` scratchpad | `Option+Backtick` toggles workspace `S`    | AeroSpace has no dropdown workspace                     |
+| `Super+Alt+S` move to scratchpad     | `Option+Shift+Backtick`                    | Same                                                    |
+| `Super+1` to `0`                     | `Option+1` to `0` within the current bank  | See workspace banks below                               |
+| `Super+Return` terminal              | `Option+Shift+Enter`                       | Option+Enter is JetBrains' Show Intention Actions       |
+| `Super+Alt+Return` tmux terminal     | `Option+Ctrl+Enter`                        | Alt has no key left once Option plays Super             |
+| `Super+Ctrl+Return` Herdr            | Unbound                                    | Herdr has no macOS package                              |
+| `Super+Shift+Return` browser         | `Option+Shift+B`                           | `Option+Shift+Enter` is the terminal, per the row above |
+| `Super+Shift+M` Spotify              | Unbound                                    | Not installed                                           |
 
 Workspace banks are this repo's own idea. There are ten Personal workspaces and ten Work ones, and `Option+;` switches
 between them while keeping the slot number. Holding Ctrl with a digit reaches the other bank directly. Moving a window

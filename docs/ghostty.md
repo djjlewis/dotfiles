@@ -26,13 +26,15 @@ closes. These are the additions.
 | `Command+Ctrl+Option+Shift+Arrow`      | Resize the split by 100 pixels |
 | `Shift+Insert` / `Ctrl+Insert`         | Paste and copy                 |
 | `Option+3`                             | Types `#`                      |
+| `Command+Option+Enter`                 | Sends the `Alt+Shift+Enter` code |
 
 Option acts as Alt, so `Option+letter` reaches the shell and terminal apps as `Alt+letter`. That is what makes `Alt+C`
 in fzf work. The cost is that `Option+letter` no longer types accented characters. `Option+3` gets its own binding
 because the UK keyboard puts `#` there.
 
-`Shift+Enter` and `Option+Shift+Enter` are sent as distinct key codes rather than plain Enter, so programs that support
-it, such as Claude Code, can use them for a newline. Older programs may treat them as Enter.
+`Shift+Enter` is sent as a distinct key code rather than plain Enter, so programs that support it, such as Claude Code,
+can use it for a newline. Older programs may treat it as Enter. The second such code belongs to `Alt+Shift+Enter`, but
+AeroSpace opens a window with that key, so `Command+Option+Enter` sends it here.
 
 ## Closing
 
