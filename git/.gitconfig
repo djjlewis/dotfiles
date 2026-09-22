@@ -34,7 +34,14 @@
 	ff = only
 [init]
 	defaultBranch = main
-# Credential helper is OS-specific — set in ~/.gitconfig-personal:
+# Credential helpers are OS-specific, so they live in ~/.gitconfig-local
+# rather than here. This file is stowed on every machine; that one is not in
+# the repo, and git ignores the include when the file is absent.
 #   macOS: helper = osxkeychain
 #   Arch:  helper = libsecret  (install: pacman -S libsecret + git-credential-libsecret)
 #   Other: helper = cache --timeout=3600
+# `gh auth setup-git` writes an absolute path to the gh binary into whichever
+# file it finds first, which is this one. Move what it writes into
+# ~/.gitconfig-local, or Linux inherits a Homebrew path that does not exist.
+[include]
+	path = ~/.gitconfig-local
