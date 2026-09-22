@@ -3,7 +3,7 @@
 [AeroSpace](https://nikitabobko.github.io/AeroSpace/) tiles windows. Every key below uses Option, so Command keeps its
 macOS meaning. Config: `aerospace/.config/aerospace/aerospace.toml`.
 
-AeroSpace does not start at login. Open it from Spotlight once and it stays running. `Option+Shift+;` then `Esc` reloads
+AeroSpace does not start at login. Open it from Spotlight once and it stays running. `Option+Ctrl+;` then `Esc` reloads
 the config after an edit.
 
 ## Windows
@@ -27,20 +27,25 @@ the config after an edit.
 
 There are two banks of ten workspaces, Personal `P0` to `P9` and Work `W0` to `W9`, plus a scratchpad workspace `S`.
 
-| Key                                                  | Action                                                |
-| ---------------------------------------------------- | ----------------------------------------------------- |
-| `Option+1` to `Option+0`                             | Switch to that slot in the current bank               |
-| `Command+Option+3`                                   | Slot 3. `Option+3` types `#` on a UK keyboard         |
-| `Option+Shift+1` to `Option+Shift+0`                 | Move the window to that slot. Focus stays where it is |
-| `Command+Option+Shift+3`                             | Move to slot 3                                        |
-| `Option+Tab`                                         | Back to the previous workspace                        |
-| `Option+Shift+Tab`                                   | Move this workspace to the next monitor               |
-| `Option+;` then `P` or `W`                           | Switch bank, keeping the slot number                  |
-| `Option+;` then `Shift+P` or `Shift+W`, then a digit | Move the window to that slot in the other bank        |
-| `Option+Backtick`                                    | Toggle the scratchpad workspace                       |
-| `Option+Shift+Backtick`                              | Move the window to the scratchpad                     |
+| Key                                            | Action                                                             |
+| ---------------------------------------------- | ------------------------------------------------------------------ |
+| `Option+1` to `Option+0`                       | Switch to that slot in the current bank                            |
+| `Command+Option+3`                             | Slot 3. `Option+3` types `#` on a UK keyboard                      |
+| `Option+Shift+1` to `Option+Shift+0`           | Move the window to that slot. Focus stays where it is              |
+| `Command+Option+Shift+3`                       | Move to slot 3                                                     |
+| `Option+;`                                     | Cross to the other bank, keeping the slot number                   |
+| `Option+Shift+;`                               | Send the window to the same slot in the other bank, and go with it |
+| `Option+Ctrl+1` to `Option+Ctrl+0`             | Switch to that slot in the other bank                              |
+| `Option+Ctrl+Shift+1` to `Option+Ctrl+Shift+0` | Send the window to that slot in the other bank, and go with it     |
+| `Option+Tab`                                   | Back to the previous workspace                                     |
+| `Option+Shift+Tab`                             | Move this workspace to the next monitor                            |
+| `Option+Backtick`                              | Toggle the scratchpad workspace                                    |
+| `Option+Shift+Backtick`                        | Move the window to the scratchpad                                  |
 
-`Esc` leaves the bank mode without doing anything.
+Ctrl reaches the other bank, the way it reaches the other monitor on `H/J/K/L`. Slot 3 needs no Command escape in the
+Ctrl rows, because only plain `Option+3` types `#`.
+
+Crossing banks takes focus with the window. Moving within a bank does not, because the window is still a digit away.
 
 New windows land in a fixed workspace for three apps: Ghostty in `W0`, Firefox in `P1`, and ChatGPT in `W4`. Add a rule
 with an `on-window-detected` block. `aerospace list-apps` prints the app IDs.
@@ -62,7 +67,7 @@ The keys that open System Settings panels, reminders and notices are in the [mac
 
 ## Service mode
 
-`Option+Shift+;` enters service mode. The next key runs one command and returns to normal.
+`Option+Ctrl+;` enters service mode. The next key runs one command and returns to normal.
 
 | Key                    | Action                                               |
 | ---------------------- | ---------------------------------------------------- |

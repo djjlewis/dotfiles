@@ -41,7 +41,8 @@ full key list.
 | `Super+Shift+M` Spotify              | Unbound                                    | Not installed                                          |
 
 Workspace banks are this repo's own idea. There are ten Personal workspaces and ten Work ones, and `Option+;` switches
-between them while keeping the slot number. Moving a window to a slot does not follow it there.
+between them while keeping the slot number. Holding Ctrl with a digit reaches the other bank directly. Moving a window
+within a bank does not follow it there; moving it across banks does.
 
 No equivalent in AeroSpace: pseudo tiling (`Super+P`), sticky pop-out (`Super+O`), window grouping (`Super+G`), the
 scrolling layout (`Super+L`), screen zoom (`Super+Ctrl+Z`), monitor scaling (`Super+/`) and the gaps toggle. Gaps are
