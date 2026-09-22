@@ -207,6 +207,13 @@ run = 'move-node-to-workspace W4'
     alt-ctrl-shift-9 = 'exec-and-forget "$HOME/.config/aerospace/workspace-group" other move 9'
     alt-ctrl-shift-0 = 'exec-and-forget "$HOME/.config/aerospace/workspace-group" other move 0'
 
+    # Step through the current bank, 1 to 9 then 0, wrapping. Ctrl+Command
+    # rather than Option, because Option+Arrow moves the caret by word. This
+    # takes VS Code's Move Editor into Previous/Next Group and Ghostty's
+    # default 10-pixel split resize.
+    ctrl-cmd-left = 'exec-and-forget "$HOME/.config/aerospace/workspace-group" prev'
+    ctrl-cmd-right = 'exec-and-forget "$HOME/.config/aerospace/workspace-group" next'
+
     # See: https://nikitabobko.github.io/AeroSpace/commands#workspace-back-and-forth
     alt-tab = 'workspace-back-and-forth'
     # See: https://nikitabobko.github.io/AeroSpace/commands#move-workspace-to-monitor

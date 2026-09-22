@@ -37,6 +37,7 @@ There are two banks of ten workspaces, Personal `P0` to `P9` and Work `W0` to `W
 | `Option+Shift+;`                               | Send the window to the same slot in the other bank, and go with it |
 | `Option+Ctrl+1` to `Option+Ctrl+0`             | Switch to that slot in the other bank                              |
 | `Option+Ctrl+Shift+1` to `Option+Ctrl+Shift+0` | Send the window to that slot in the other bank, and go with it     |
+| `Ctrl+Command+Left` / `Ctrl+Command+Right`     | Previous or next slot in the current bank, wrapping from 0 to 1    |
 | `Option+Tab`                                   | Back to the previous workspace                                     |
 | `Option+Shift+Tab`                             | Move this workspace to the next monitor                            |
 | `Option+Backtick`                              | Toggle the scratchpad workspace                                    |
@@ -44,6 +45,10 @@ There are two banks of ten workspaces, Personal `P0` to `P9` and Work `W0` to `W
 
 Ctrl reaches the other bank, the way it reaches the other monitor on `H/J/K/L`. Slot 3 needs no Command escape in the
 Ctrl rows, because only plain `Option+3` types `#`.
+
+`Ctrl+Command+Left/Right` steps through the bank in number-row order, 1 to 9 then 0. It uses Command because
+`Option+Arrow` belongs to text editing. It replaces VS Code's Move Editor into Previous/Next Group and Ghostty's
+default 10-pixel split resize. The 100-pixel resize on `Command+Ctrl+Option+Shift+Arrow` still works.
 
 Crossing banks takes focus with the window. Moving within a bank does not, because the window is still a digit away.
 
