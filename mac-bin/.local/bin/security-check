@@ -1,0 +1,514 @@
+#!/usr/bin/env bash
+#
+# Read-only security review of this Mac.
+#
+#   security-check              run every check
+#   security-check --quick      skip the slow checks (Homebrew, app signatures)
+#   security-check --checklist  print the manual checklist for System Settings
+#
+# Every line is one check: ok, WARN, FAIL, info or skip. A FAIL is something
+# to fix. A WARN is something to look at. The script changes nothing and needs
+# no sudo. Checks that read the privacy database need Full Disk Access for the
+# terminal and report skip without it. Exit status is 1 when any check fails.
+
+# shellcheck disable=SC2088  # paths in messages are shown with ~ on purpose
+set -uo pipefail
+
+quick=0
+mode=check
+
+case "${1:-}" in
+    "") ;;
+    --quick) quick=1 ;;
+    --checklist) mode=checklist ;;
+    -h|--help)
+        sed -n '3,12p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+        exit 0
+        ;;
+    *)
+        echo "unknown option: $1" >&2
+        exit 2
+        ;;
+esac
+
+# ---------------------------------------------------------------- output ----
+
+fails=0
+warns=0
+
+if [ -t 1 ]; then
+    c_ok=$'\e[32m' c_warn=$'\e[33m' c_fail=$'\e[31m' c_dim=$'\e[2m' c_head=$'\e[1m' c_off=$'\e[0m'
+else
+    c_ok='' c_warn='' c_fail='' c_dim='' c_head='' c_off=''
+fi
+
+section() { printf '\n%s%s%s\n' "$c_head" "$1" "$c_off"; }
+ok()      { printf '  %sok%s    %s\n' "$c_ok" "$c_off" "$1"; }
+warn()    { printf '  %sWARN%s  %s\n' "$c_warn" "$c_off" "$1"; warns=$((warns + 1)); }
+fail()    { printf '  %sFAIL%s  %s\n' "$c_fail" "$c_off" "$1"; fails=$((fails + 1)); }
+info()    { printf '  %sinfo  %s%s\n' "$c_dim" "$1" "$c_off"; }
+skip()    { printf '  %sskip  %s%s\n' "$c_dim" "$1" "$c_off"; }
+
+# check fail|warn "ok text" "miss text" command args...
+# Runs the command. Success prints ok, failure prints FAIL or WARN.
+check() {
+    local level=$1 pass=$2 miss=$3
+    shift 3
+    if "$@"; then
+        ok "$pass"
+    elif [ "$level" = warn ]; then
+        warn "$miss"
+    else
+        fail "$miss"
+    fi
+}
+
+# ------------------------------------------------------------- checklist ----
+
+checklist() {
+    cat <<'EOF'
+Manual checklist. These live in System Settings or a browser and the script
+cannot read them. Work through it every few months.
+
+Privacy & Security
+  [ ] Full Disk Access: only apps you still use and recognise. Remove the rest.
+  [ ] Accessibility, Input Monitoring, Screen Recording: same review. An entry
+      for an app you have uninstalled is stale. Remove it.
+  [ ] Security: "Allow applications from" is App Store & Known Developers.
+  [ ] FileVault is on and you know where the recovery key is.
+  [ ] Lockdown Mode: consider it if you travel with the Mac or are a target.
+
+Sharing (General > Sharing)
+  [ ] Every service is off unless you use it this month: Screen Sharing, File
+      Sharing, Media Sharing, Printer Sharing, Remote Login, Remote Management,
+      Remote Application Scripting, Internet Sharing.
+  [ ] If Remote Login must stay on: "Allow full disk access for remote users"
+      is off, access is limited to your user, and sshd only accepts keys.
+      docs/security.md in the dotfiles has the config.
+
+AirDrop & Handoff (General > AirDrop & Handoff)
+  [ ] AirPlay Receiver is "Current User" or off.
+  [ ] AirDrop is "Contacts Only" or "No One" when not in use.
+
+Lock Screen
+  [ ] Require password immediately after the screen saver or display sleep.
+  [ ] Display turns off after a few minutes on battery and on power.
+
+Apple Account
+  [ ] Two-factor authentication is on.
+  [ ] Trusted devices: remove any you no longer own.
+  [ ] Find My Mac is on, so Activation Lock protects a stolen machine.
+  [ ] Advanced Data Protection: on if you keep sensitive data in iCloud and
+      are happy to hold the recovery key yourself.
+
+Network
+  [ ] Firewall is on with stealth mode.
+  [ ] Wi-Fi: prune saved networks you will not join again, and turn off
+      auto-join for public ones.
+  [ ] VPN or Tailscale is what you expect, and no unknown network extensions
+      are installed (General > Login Items & Extensions > Network Extensions).
+
+Login Items & Extensions
+  [ ] "Open at Login" and "Allow in the Background": every entry is something
+      you installed on purpose.
+
+Browsers
+  [ ] Extensions: remove anything unused, anything from a service that has
+      shut down, and anything with access to all sites that you cannot name a
+      reason for.
+  [ ] Saved passwords live in one password manager. Browser password saving
+      is off. Delete the browser's own copies once imported.
+  [ ] Safari > General: "Open safe files after downloading" is off.
+
+Backups and updates
+  [ ] Time Machine has a destination and the last backup is recent.
+  [ ] You have tested restoring one file.
+  [ ] Automatic macOS updates and App Store updates are on.
+  [ ] brew upgrade has run in the last month.
+
+Accounts
+  [ ] One admin account, guest off, no automatic login.
+  [ ] Password manager and two-factor on email, Apple, GitHub, bank.
+EOF
+}
+
+if [ "$mode" = checklist ]; then
+    checklist
+    exit 0
+fi
+
+# ---------------------------------------------------------------- checks ----
+
+me=$(id -un)
+tcc_system="/Library/Application Support/com.apple.TCC/TCC.db"
+have_fda=0
+if sqlite3 "$tcc_system" 'select 1 limit 1' >/dev/null 2>&1; then
+    have_fda=1
+fi
+
+section "System"
+
+info "$(sw_vers -productName) $(sw_vers -productVersion) ($(sw_vers -buildVersion))"
+
+su_plist=/Library/Preferences/com.apple.SoftwareUpdate
+pending=$(defaults read $su_plist RecommendedUpdates 2>/dev/null | grep -c 'Identifier' || true)
+check warn "No macOS updates waiting" "$pending macOS update(s) waiting" test "${pending:-0}" -eq 0
+for key in AutomaticallyInstallMacOSUpdates CriticalUpdateInstall ConfigDataInstall AutomaticDownload; do
+    v=$(defaults read $su_plist $key 2>/dev/null || echo 0)
+    check warn "Auto update $key on" "Auto update $key is off" test "$v" = 1
+done
+v=$(defaults read /Library/Preferences/com.apple.commerce AutoUpdate 2>/dev/null || echo 0)
+check warn "App Store auto update on" "App Store auto update is off" test "$v" = 1
+
+fv=$(fdesetup status 2>/dev/null)
+check fail "FileVault on" "FileVault is off" grep -q 'FileVault is On' <<<"$fv"
+
+sip=$(csrutil status 2>/dev/null)
+check fail "System Integrity Protection on" "SIP is disabled" grep -q 'enabled' <<<"$sip"
+
+gk=$(spctl --status 2>&1)
+check fail "Gatekeeper on" "Gatekeeper is off" grep -q 'assessments enabled' <<<"$gk"
+
+boot=$(system_profiler SPiBridgeDataType 2>/dev/null | grep 'Secure Boot:' | awk -F': ' '{print $2}')
+if [ -n "$boot" ]; then
+    check warn "Secure Boot: Full Security" "Secure Boot: $boot" test "$boot" = "Full Security"
+fi
+
+if profiles list 2>/dev/null | grep -q 'no configuration profiles'; then
+    ok "No configuration profiles"
+else
+    warn "Configuration profiles installed. Run: profiles list"
+fi
+
+section "Firewall"
+
+fw=/usr/libexec/ApplicationFirewall/socketfilterfw
+fw_state=$($fw --getglobalstate 2>/dev/null)
+check fail "Application firewall on" "Application firewall is off" grep -q 'enabled' <<<"$fw_state"
+fw_stealth=$($fw --getstealthmode 2>/dev/null)
+check warn "Stealth mode on" "Stealth mode is off" grep -qE 'enabled|is on' <<<"$fw_stealth"
+interp=$($fw --listapps 2>/dev/null | grep -E '/(python[0-9.]*|ruby|perl|node)\s*$' | awk '{print $3}' | tr '\n' ' ')
+if [ -n "$interp" ]; then
+    warn "Firewall allows incoming connections to interpreters: $interp"
+fi
+
+section "Sharing and listeners"
+
+for svc in com.openssh.sshd:"Remote Login (SSH)" \
+           com.apple.screensharing:"Screen Sharing" \
+           com.apple.smbd:"File Sharing" \
+           com.apple.RemoteDesktop.agent:"Remote Management" \
+           com.apple.AEServer:"Remote Apple Events" \
+           com.apple.InternetSharing:"Internet Sharing"; do
+    label=${svc#*:}
+    id=${svc%%:*}
+    if ! launchctl print "system/$id" >/dev/null 2>&1; then
+        ok "$label off"
+    elif [ "$id" = com.openssh.sshd ]; then
+        # Remote Login is acceptable when sshd only takes keys from the tailnet.
+        sshd_conf=$(cat /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>/dev/null | grep -vE '^\s*#')
+        if grep -qE '^\s*AllowUsers\s.*@100\.64\.0\.0/10' <<<"$sshd_conf" \
+            && grep -qiE '^\s*PasswordAuthentication\s+no' <<<"$sshd_conf" \
+            && grep -qiE '^\s*KbdInteractiveAuthentication\s+no' <<<"$sshd_conf"; then
+            ok "$label on, keys only, tailnet addresses only"
+            [ -s ~/.ssh/authorized_keys ] || warn "No authorized_keys, so no key can log in over SSH"
+        else
+            fail "$label is on without the tailnet-only, keys-only sshd config (see docs/security.md)"
+        fi
+    else
+        fail "$label is on"
+    fi
+done
+
+if [ "$have_fda" = 1 ]; then
+    sshfda=$(sqlite3 "$tcc_system" "select auth_value from access where service='kTCCServiceSystemPolicyAllFiles' and client='/usr/libexec/sshd-keygen-wrapper';" 2>/dev/null)
+    check fail "Remote users do not get Full Disk Access" "Remote Login grants Full Disk Access to remote users" \
+        test "${sshfda:-0}" != 2
+fi
+
+if lsof -nP -iTCP:7000 -sTCP:LISTEN 2>/dev/null | grep -q ControlCe; then
+    warn "AirPlay Receiver is listening on every interface (ports 5000 and 7000)"
+else
+    ok "AirPlay Receiver not listening"
+fi
+
+listeners=$(lsof -nP -iTCP -sTCP:LISTEN 2>/dev/null | awk 'NR>1 && $9 !~ /^(127\.0\.0\.1|\[::1\]|localhost)/ {print $1" "$9}' \
+    | grep -vE '^(rapportd|ControlCe|sharingd|identitys) ' | sort -u)
+if [ -n "$listeners" ]; then
+    warn "Processes listening on non-loopback addresses:"
+    sed 's/^/        /' <<<"$listeners"
+else
+    ok "No third-party process listens on a non-loopback address"
+fi
+
+section "Accounts and lock"
+
+guest=$(defaults read /Library/Preferences/com.apple.loginwindow GuestEnabled 2>/dev/null || echo 0)
+check fail "Guest account off" "Guest account is on" test "$guest" = 0
+
+if defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser >/dev/null 2>&1; then
+    fail "Automatic login is on"
+else
+    ok "No automatic login"
+fi
+
+admins=$(dscl . read /Groups/admin GroupMembership 2>/dev/null | sed 's/GroupMembership: //')
+extra=$(tr ' ' '\n' <<<"$admins" | grep -vE "^(root|$me|_mbsetupuser)$" | tr '\n' ' ')
+if [ -n "$extra" ]; then
+    warn "Other admin users: $extra"
+else
+    ok "Admin group is just $me"
+fi
+
+lock=$(sysadminctl -screenLock status 2>&1)
+if grep -q 'immediate' <<<"$lock"; then
+    ok "Screen lock asks for the password immediately"
+elif grep -qE 'delay is [0-9]+ seconds' <<<"$lock"; then
+    secs=$(grep -oE 'delay is [0-9]+' <<<"$lock" | awk '{print $3}')
+    check warn "Screen lock delay ${secs}s" "Screen lock delay is ${secs}s" test "$secs" -le 300
+else
+    warn "Screen lock is off"
+fi
+
+ds=$(pmset -g 2>/dev/null | awk '/^ displaysleep/ {print $2}')
+if [ -n "$ds" ]; then
+    check warn "Display sleeps after ${ds} min" "Display sleep is ${ds} min" test "$ds" -gt 0 -a "$ds" -le 15
+fi
+
+if grep -qs 'pam_tid' /etc/pam.d/sudo_local; then
+    ok "Touch ID works for sudo"
+else
+    warn "Touch ID for sudo not set up (copy /etc/pam.d/sudo_local.template and uncomment the line)"
+fi
+
+kc=$(security show-keychain-info ~/Library/Keychains/login.keychain-db 2>&1)
+if grep -q 'no-timeout' <<<"$kc"; then
+    info "Login keychain never locks on its own"
+else
+    ok "Login keychain locks: ${kc#*Keychain *}"
+fi
+
+section "SSH"
+
+if [ -d ~/.ssh ]; then
+    perm=$(stat -f '%Lp' ~/.ssh)
+    check fail "~/.ssh is 700" "~/.ssh is $perm, should be 700" test "$perm" = 700
+    for key in ~/.ssh/id_*; do
+        [ -f "$key" ] || continue
+        case "$key" in *.pub) continue ;; esac
+        name=$(basename "$key")
+        perm=$(stat -f '%Lp' "$key")
+        check fail "$name is 600" "$name is $perm, should be 600" test "$perm" = 600
+        if ssh-keygen -y -P '' -f "$key" >/dev/null 2>&1; then
+            fail "$name has no passphrase"
+        else
+            ok "$name has a passphrase"
+        fi
+    done
+    if [ -s ~/.ssh/authorized_keys ]; then
+        info "authorized_keys has $(grep -c . ~/.ssh/authorized_keys) key(s)"
+    fi
+    if grep -qsiE '^\s*ForwardAgent\s+yes' ~/.ssh/config; then
+        warn "ssh config forwards the agent (ForwardAgent yes)"
+    fi
+    if grep -qsiE '^\s*StrictHostKeyChecking\s+no' ~/.ssh/config; then
+        warn "ssh config disables host key checking"
+    fi
+    for inc in $(grep -sE '^\s*Include' ~/.ssh/config | awk '{print $2}'); do
+        inc=${inc/#\~/$HOME}
+        [ -e "$inc" ] || warn "ssh config includes a file that does not exist: $inc"
+    done
+fi
+
+section "Persistence"
+
+for dir in ~/Library/LaunchAgents /Library/LaunchAgents /Library/LaunchDaemons; do
+    [ -d "$dir" ] || continue
+    items=""
+    for plist in "$dir"/*.plist; do
+        [ -e "$plist" ] || continue
+        case "$(basename "$plist")" in com.apple.*) continue ;; esac
+        items="$items $(basename "$plist")"
+    done
+    if [ -n "$items" ]; then
+        info "$dir:$items"
+    fi
+done
+if crontab -l >/dev/null 2>&1; then
+    warn "User crontab is not empty"
+fi
+legacy=$(osascript -e 'tell application "System Events" to get the name of every login item' 2>/dev/null)
+[ -n "$legacy" ] && info "Login items: $legacy"
+
+if [ "$quick" = 0 ]; then
+    for app in /Applications/*.app ~/Applications/*.app; do
+        [ -d "$app" ] || continue
+        sig=$(codesign -dv --verbose=2 "$app" 2>&1)
+        name=$(basename "$app" .app)
+        if grep -q 'Signature=adhoc' <<<"$sig"; then
+            warn "$name is ad-hoc signed (built locally or unsigned): $app"
+        elif grep -q 'code object is not signed' <<<"$sig"; then
+            warn "$name is unsigned: $app"
+        fi
+    done
+    ok "Checked app signatures in /Applications and ~/Applications"
+else
+    skip "App signatures (--quick)"
+fi
+
+section "Privacy grants"
+
+if [ "$have_fda" = 1 ]; then
+    stale=0
+    while IFS='|' read -r service client; do
+        [ -n "$client" ] || continue
+        case "$client" in
+            /*) [ -e "$client" ] || { warn "${service#kTCCService} granted to missing path $client"; stale=1; } ;;
+            *)
+                if [ -z "$(mdfind "kMDItemCFBundleIdentifier == '$client'" 2>/dev/null | head -1)" ]; then
+                    warn "${service#kTCCService} granted to $client, which is not installed"
+                    stale=1
+                fi
+                ;;
+        esac
+    done < <(sqlite3 "$tcc_system" "select service, client from access where auth_value=2 and service in ('kTCCServiceAccessibility','kTCCServiceListenEvent','kTCCServiceScreenCapture','kTCCServiceSystemPolicyAllFiles','kTCCServicePostEvent');" 2>/dev/null)
+    [ "$stale" = 0 ] && ok "Every Accessibility, Input Monitoring, Screen Recording and Full Disk Access grant points at an installed app"
+    while IFS='|' read -r service client; do
+        [ -n "$client" ] || continue
+        path=$(mdfind "kMDItemCFBundleIdentifier == '$client'" 2>/dev/null | head -1)
+        [ -n "$path" ] || continue
+        if codesign -dv --verbose=2 "$path" 2>&1 | grep -q 'Signature=adhoc'; then
+            warn "${service#kTCCService} granted to ad-hoc signed app $client ($path)"
+        fi
+    done < <(sqlite3 "$tcc_system" "select service, client from access where auth_value=2 and service in ('kTCCServiceAccessibility','kTCCServiceListenEvent','kTCCServiceScreenCapture');" 2>/dev/null)
+else
+    skip "Privacy grants need Full Disk Access for this terminal"
+fi
+
+section "Packages"
+
+if [ "$quick" = 0 ] && command -v brew >/dev/null; then
+    out=$(brew outdated --quiet 2>/dev/null | wc -l | tr -d ' ')
+    check warn "Homebrew is up to date" "$out Homebrew package(s) outdated. Run: brew upgrade" test "$out" = 0
+else
+    skip "Homebrew outdated (--quick or no brew)"
+fi
+
+dangling=""
+for dir in $(tr ':' '\n' <<<"$PATH" | sort -u); do
+    [ -d "$dir" ] || continue
+    case "$dir" in /usr/bin|/usr/sbin|/bin|/sbin) continue ;; esac
+    for f in "$dir"/*; do
+        [ -L "$f" ] && [ ! -e "$f" ] && dangling="$dangling $f"
+    done
+done
+if [ -n "$dangling" ]; then
+    warn "Dangling symlinks on PATH:$dangling"
+else
+    ok "No dangling symlinks on PATH"
+fi
+
+section "Credentials"
+
+for f in .netrc .aws/credentials .npmrc .pypirc .config/gh/hosts.yml .docker/config.json .kube/config .git-credentials; do
+    p=~/$f
+    [ -f "$p" ] || continue
+    perm=$(stat -f '%Lp' "$p")
+    if [ "$perm" != 600 ] && [ "$perm" != 400 ]; then
+        warn "~/$f is mode $perm. Make it 600"
+    fi
+done
+if [ -f ~/.docker/config.json ] && grep -q '"auth":' ~/.docker/config.json; then
+    warn "~/.docker/config.json holds a registry token inline. Use credsStore osxkeychain"
+fi
+if grep -qs '_authToken' ~/.npmrc; then
+    warn "~/.npmrc holds an npm token inline"
+fi
+if [ -f ~/.git-credentials ]; then
+    warn "~/.git-credentials stores git passwords in plain text"
+fi
+helper=$(cd "$HOME" && git config --get credential.helper 2>/dev/null || true)
+check warn "git credentials go to the keychain" "git credential.helper is '${helper:-unset}'" test "$helper" = osxkeychain
+if git config --global --get-all safe.directory 2>/dev/null | grep -qx '\*'; then
+    warn "git safe.directory is '*'"
+fi
+secrets=$(grep -hoE '^\s*export\s+[A-Z0-9_]*(KEY|TOKEN|SECRET|PASSWORD)[A-Z0-9_]*=' ~/.zshrc ~/.zshenv ~/.zprofile ~/.config/zsh/*.zsh 2>/dev/null | sort -u | tr -d '\n')
+if [ -n "$secrets" ]; then
+    warn "Shell startup files export what look like secrets: $secrets"
+else
+    ok "No secrets exported from shell startup files"
+fi
+for h in ~/.zsh_history ~/.histfile ~/.bash_history; do
+    [ -f "$h" ] || continue
+    perm=$(stat -f '%Lp' "$h")
+    [ "$perm" = 600 ] || warn "$h is mode $perm"
+done
+
+section "Browsers"
+
+count_sqlite() { # file table
+    local tmp
+    tmp=$(mktemp)
+    cp "$1" "$tmp" 2>/dev/null && sqlite3 "$tmp" "select count(*) from $2;" 2>/dev/null
+    rm -f "$tmp"
+}
+total=0
+for prof in "$HOME/Library/Application Support/Google/Chrome"/{Default,Profile\ *} \
+            "$HOME/Library/Application Support/Microsoft Edge"/{Default,Profile\ *}; do
+    [ -f "$prof/Login Data" ] || continue
+    n=$(count_sqlite "$prof/Login Data" logins)
+    [ "${n:-0}" -gt 0 ] && info "$(basename "$(dirname "$prof")")/$(basename "$prof"): $n saved password(s)"
+    total=$((total + ${n:-0}))
+done
+for f in "$HOME/Library/Application Support/Firefox/Profiles"/*/logins.json; do
+    [ -f "$f" ] || continue
+    n=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1]))["logins"]))' "$f" 2>/dev/null)
+    [ "${n:-0}" -gt 0 ] && info "Firefox/$(basename "$(dirname "$f")"): $n saved password(s)"
+    total=$((total + ${n:-0}))
+done
+if [ "$total" -gt 0 ]; then
+    warn "$total passwords saved in browsers. Move them to one password manager"
+elif [ "$have_fda" = 1 ]; then
+    ok "No passwords saved in Chrome, Edge or Firefox"
+else
+    skip "Browser password stores need Full Disk Access"
+fi
+
+section "Backups and network"
+
+if tmutil destinationinfo 2>&1 | grep -q 'No destinations'; then
+    fail "Time Machine has no destination"
+else
+    latest=$(tmutil latestbackup 2>/dev/null | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1)
+    if [ -n "$latest" ]; then
+        age=$(( ( $(date +%s) - $(date -j -f '%Y-%m-%d' "$latest" +%s) ) / 86400 ))
+        check warn "Last Time Machine backup $latest" "Last Time Machine backup was $age days ago ($latest)" test "$age" -le 7
+    else
+        warn "Time Machine has a destination but no completed backup"
+    fi
+fi
+
+fm=$(defaults read /Library/Preferences/com.apple.FindMyMac FMMEnabled 2>/dev/null || echo 0)
+check warn "Find My Mac on" "Find My Mac is off" test "$fm" = 1
+
+hosts=$(grep -vE '^\s*(#|$)|localhost|broadcasthost' /etc/hosts)
+[ -n "$hosts" ] && warn "/etc/hosts has extra entries: $(tr '\n' ';' <<<"$hosts")"
+
+proxy=$(scutil --proxy 2>/dev/null | grep -E 'Enable : 1')
+[ -n "$proxy" ] && warn "A system proxy is enabled"
+
+dns=$(scutil --dns 2>/dev/null | awk '/resolver #1/{f=1} f && /nameserver\[0\]/{print $3; exit}')
+info "DNS resolver: ${dns:-unknown}"
+
+wifi=$(networksetup -listpreferredwirelessnetworks en0 2>/dev/null | tail -n +2 | wc -l | tr -d ' ')
+[ -n "$wifi" ] && info "$wifi saved Wi-Fi networks"
+
+# --------------------------------------------------------------- summary ----
+
+printf '\n%s%d failed, %d to look at.%s' "$c_head" "$fails" "$warns" "$c_off"
+if [ "$have_fda" = 0 ]; then
+    printf ' Privacy checks skipped: give the terminal Full Disk Access to include them.'
+fi
+printf '\nRun security-check --checklist for the settings this cannot read.\n'
+
+[ "$fails" -eq 0 ]

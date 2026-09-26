@@ -76,6 +76,7 @@ in `cloud`. Neovim is the editor in core, which is why VS Code and JetBrains Too
 | [tmux](docs/tmux.md)           | Prefix keys and the `tdl`, `tds`, `tdlm` and `tsl` layouts          |
 | [Neovim](docs/neovim.md)       | LazyVim and the markdown setup                                      |
 | [Themes](docs/theme.md)        | The `theme` command and how to add a palette                        |
+| [Security](docs/security.md)   | The `security-check` command and SSH over Tailscale                 |
 
 The setup follows the [Omarchy manual](https://omarchy.org/manual) where macOS allows.
 [Differences from Omarchy](docs/omarchy-differences.md) lists every key and command that had to change, and the
@@ -91,7 +92,7 @@ The setup follows the [Omarchy manual](https://omarchy.org/manual) where macOS a
 | ghostty       |   ✓   |   ✓   | Layout and keys shared with Linux                                  |
 | ghostty-macos |   ✓   |       | Mac font size, opacity, Option key, extra keys, and the launcher   |
 | git           |   ✓   |   ✓   | Aliases and diff-so-fancy. Identity lives in ignored include files |
-| mac-bin       |   ✓   |       | `remind` and `notice`                                              |
+| mac-bin       |   ✓   |       | `remind`, `notice` and `security-check`                            |
 | nvim          |   ✓   |       | LazyVim starter with the markdown extra                            |
 | starship      |   ✓   |   ✓   | Prompt, coloured from the terminal palette                         |
 | theme         |   ✓   |       | Colour palettes and the `theme` command                            |
