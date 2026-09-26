@@ -15,7 +15,23 @@ any check fails, so the command works in a script.
 
 The checks cover disk encryption, boot policy, Gatekeeper, the firewall, every sharing service, open ports, accounts
 and screen lock, SSH keys and config, launch agents and login items, app signatures, privacy grants, Homebrew, files
-that hold credentials, passwords saved in browsers, Time Machine, DNS and proxies.
+that hold credentials, passwords saved in browsers, Time Machine, git repos under home that have no remote or unpushed
+commits, DNS and proxies.
+
+## Accepting a finding
+
+A finding you have decided to live with goes in `~/.config/security-check/accepted`, one per line. Each line is a
+substring of the message, and a line starting with `#` is a comment. A matching finding prints as `accepted` and no
+longer counts as a failure, so the exit status stays useful. For example, on a machine whose files all live in cloud
+storage and pushed repos:
+
+```
+# Rebuilt from dotfiles and brew; documents are in iCloud and OneDrive.
+Time Machine has no destination
+```
+
+Keep the reason in the comment. The file is local and not part of the dotfiles, because the decision belongs to one
+machine.
 
 ## Full Disk Access
 

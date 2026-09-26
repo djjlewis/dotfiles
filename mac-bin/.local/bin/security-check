@@ -6,10 +6,15 @@
 #   security-check --quick      skip the slow checks (Homebrew, app signatures)
 #   security-check --checklist  print the manual checklist for System Settings
 #
-# Every line is one check: ok, WARN, FAIL, info or skip. A FAIL is something
-# to fix. A WARN is something to look at. The script changes nothing and needs
-# no sudo. Checks that read the privacy database need Full Disk Access for the
-# terminal and report skip without it. Exit status is 1 when any check fails.
+# Every line is one check: ok, WARN, FAIL, info, skip or accepted. A FAIL is
+# something to fix. A WARN is something to look at. The script changes nothing
+# and needs no sudo. Checks that read the privacy database need Full Disk
+# Access for the terminal and report skip without it. Exit status is 1 when
+# any check fails.
+#
+# A finding you have decided to live with goes in
+# ~/.config/security-check/accepted, one substring of its message per line.
+# Matching findings print as accepted and do not count as failures.
 
 # shellcheck disable=SC2088  # paths in messages are shown with ~ on purpose
 set -uo pipefail
@@ -22,7 +27,7 @@ case "${1:-}" in
     --quick) quick=1 ;;
     --checklist) mode=checklist ;;
     -h|--help)
-        sed -n '3,12p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+        sed -n '3,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
         exit 0
         ;;
     *)
@@ -42,10 +47,24 @@ else
     c_ok='' c_warn='' c_fail='' c_dim='' c_head='' c_off=''
 fi
 
+accepted_file="${XDG_CONFIG_HOME:-$HOME/.config}/security-check/accepted"
+
+# accepted "message": true when a line of the accepted file is a substring of it.
+accepted() {
+    [ -s "$accepted_file" ] || return 1
+    local pat
+    while IFS= read -r pat; do
+        [ -n "$pat" ] || continue
+        case "$pat" in \#*) continue ;; esac
+        case "$1" in *"$pat"*) return 0 ;; esac
+    done < "$accepted_file"
+    return 1
+}
+
 section() { printf '\n%s%s%s\n' "$c_head" "$1" "$c_off"; }
 ok()      { printf '  %sok%s    %s\n' "$c_ok" "$c_off" "$1"; }
-warn()    { printf '  %sWARN%s  %s\n' "$c_warn" "$c_off" "$1"; warns=$((warns + 1)); }
-fail()    { printf '  %sFAIL%s  %s\n' "$c_fail" "$c_off" "$1"; fails=$((fails + 1)); }
+warn()    { if accepted "$1"; then printf '  %saccepted  %s%s\n' "$c_dim" "$1" "$c_off"; else printf '  %sWARN%s  %s\n' "$c_warn" "$c_off" "$1"; warns=$((warns + 1)); fi; }
+fail()    { if accepted "$1"; then printf '  %saccepted  %s%s\n' "$c_dim" "$1" "$c_off"; else printf '  %sFAIL%s  %s\n' "$c_fail" "$c_off" "$1"; fails=$((fails + 1)); fi; }
 info()    { printf '  %sinfo  %s%s\n' "$c_dim" "$1" "$c_off"; }
 skip()    { printf '  %sskip  %s%s\n' "$c_dim" "$1" "$c_off"; }
 
@@ -121,7 +140,8 @@ Browsers
   [ ] Safari > General: "Open safe files after downloading" is off.
 
 Backups and updates
-  [ ] Time Machine has a destination and the last backup is recent.
+  [ ] Time Machine has a destination and the last backup is recent, or every
+      file you would miss is in cloud storage or a pushed repo.
   [ ] You have tested restoring one file.
   [ ] Automatic macOS updates and App Store updates are on.
   [ ] brew upgrade has run in the last month.
@@ -486,6 +506,28 @@ else
     else
         warn "Time Machine has a destination but no completed backup"
     fi
+fi
+
+if [ "$quick" = 0 ]; then
+    # Work that exists only on this disk: repos with no remote, or commits
+    # that were never pushed. Backup-ish folders and tool caches are skipped.
+    no_remote=""
+    unpushed=""
+    while IFS= read -r gitdir; do
+        repo=${gitdir%/.git}
+        case "$repo" in */.dotfiles-backup-*|*/.codex/*|*/.cache/*|*/.local/share/*) continue ;; esac
+        if [ -z "$(git -C "$repo" remote 2>/dev/null)" ]; then
+            no_remote="$no_remote ${repo#"$HOME"/}"
+            continue
+        fi
+        n=$(git -C "$repo" log --branches --not --remotes --oneline 2>/dev/null | wc -l | tr -d ' ')
+        [ "$n" != 0 ] && unpushed="$unpushed ${repo#"$HOME"/}($n)"
+    done < <(find "$HOME" -maxdepth 5 -type d -name .git -not -path '*/Library/*' -not -path '*/node_modules/*' -not -path '*/.Trash/*' 2>/dev/null)
+    [ -n "$no_remote" ] && warn "Git repos with no remote, so no copy anywhere else:$no_remote"
+    [ -n "$unpushed" ] && warn "Git repos with unpushed commits:$unpushed"
+    [ -z "$no_remote$unpushed" ] && ok "Every git repo under home has a remote and is pushed"
+else
+    skip "Git repo scan (--quick)"
 fi
 
 fm=$(defaults read /Library/Preferences/com.apple.FindMyMac FMMEnabled 2>/dev/null || echo 0)
