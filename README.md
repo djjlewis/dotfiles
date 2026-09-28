@@ -72,7 +72,7 @@ in `cloud`. Neovim is the editor in core, which is why VS Code and JetBrains Too
 | [macOS](docs/macos.md)         | System settings, Finder layout, panel keys, reminders, notices      |
 | [AeroSpace](docs/aerospace.md) | Window, workspace and launcher keys                                 |
 | [Ghostty](docs/ghostty.md)     | Terminal keys, font, and the `ghostty` launcher                     |
-| [Shell](docs/shell.md)         | zsh aliases, fzf, zoxide, and the worktree, ssh and rsync functions |
+| [Shell](docs/shell.md)         | zsh, Starship, fzf, zoxide, and the shell functions                |
 | [tmux](docs/tmux.md)           | Prefix keys and the `tdl`, `tds`, `tdlm` and `tsl` layouts          |
 | [Neovim](docs/neovim.md)       | LazyVim and the markdown setup                                      |
 | [Themes](docs/theme.md)        | The `theme` command and how to add a palette                        |
@@ -94,7 +94,6 @@ The setup follows the [Omarchy manual](https://omarchy.org/manual) where macOS a
 | git           |   ✓   |   ✓   | Aliases and diff-so-fancy. Identity lives in ignored include files |
 | mac-bin       |   ✓   |       | `remind`, `notice` and `security-check`                            |
 | nvim          |   ✓   |       | LazyVim starter with the markdown extra                            |
-| starship      |   ✓   |   ✓   | Prompt, coloured from the terminal palette                         |
 | theme         |   ✓   |       | Colour palettes and the `theme` command                            |
 | tmux          |   ✓   |   ✓   | Config and the `tdl` layout script                                 |
 | zsh           |   ✓   |   ✓   | Aliases and the shell functions in `.config/zsh/fns`               |
@@ -130,7 +129,8 @@ credential helper.
 
 ## Archived configs
 
-[archive/legacy](archive/legacy) has Zellij, old Vim and Neovim configs, and older macOS window managers.
+[archive/legacy](archive/legacy) has the former Starship prompt, Zellij, old Vim and Neovim configs, and older macOS
+window managers.
 [archive/linux/i3-desktop](archive/linux/i3-desktop) has the X11 desktop Linux used before Omarchy: Alacritty, i3,
 polybar, picom, rofi, dunst and X11. None of it is stowed.
 

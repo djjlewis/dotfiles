@@ -82,8 +82,9 @@ every sync.
 
 ## Prompt
 
-Starship prints the last three directories in blue, the git branch in purple, the git status in yellow, and a `❯` that
-turns red after a failed command. Colours are named, so they follow the terminal palette.
+zsh starts Starship without a `~/.config/starship.toml`, so Starship uses its built-in prompt. Its Python module shows a
+snake, the Python version, and the active virtual environment in Python projects. Other modules appear when their
+project or environment is active. The earlier local prompt is saved at `archive/legacy/starship-omarchy-style.toml`.
 
 ## Runtimes
 

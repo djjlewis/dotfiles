@@ -1,6 +1,7 @@
 # Themes
 
-`theme` recolours Ghostty, tmux, Starship, btop, and Neovim together.
+`theme` recolours Ghostty, tmux, btop, and Neovim. Starship uses its built-in styles, which pick up terminal palette
+colours where they use named colours.
 
 | Command          | Result                                                           |
 | ---------------- | ---------------------------------------------------------------- |
@@ -9,8 +10,8 @@
 | `theme set NAME` | Apply a theme                                                    |
 | `theme show`     | Print the theme in use                                           |
 
-tmux restyles every running session at once, and Starship follows the terminal palette. Ghostty on macOS needs
-`Command+Shift+,` to reload. btop and Neovim read their colours at startup, so restart them.
+tmux restyles every running session at once. Ghostty on macOS needs `Command+Shift+,` to reload. btop and Neovim read
+their colours at startup, so restart them.
 
 `install.sh` applies `catppuccin-macchiato` on a machine with no theme and leaves an existing choice alone.
 
@@ -36,7 +37,7 @@ stays clean when you switch.
 | ----------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | Ghostty     | `~/.local/state/dotfiles-theme/ghostty.conf`                         | The full palette, included by the shared Ghostty config                                                                    |
 | tmux        | The terminal palette, plus `~/.local/state/dotfiles-theme/tmux.conf` | The tmux config uses named colours. The generated file fixes only the two spots that draw text on top of the accent colour |
-| Starship    | The terminal palette                                                 | Named colours. Nothing is generated                                                                                        |
+| Starship    | The terminal palette                                                 | Built-in styles use the palette where they name a terminal colour. Nothing is generated                                    |
 | btop        | `~/.config/btop/themes/dotfiles-current.theme`                       | A generated btop theme. The btop config always points at this name                                                         |
 | Neovim      | `~/.config/nvim/lua/plugins/dotfiles-theme.lua`                      | A generated LazyVim spec that installs the matching colourscheme plugin                                                    |
 

@@ -96,6 +96,10 @@ its own differences. The [shell guide](shell.md) documents them.
 Omarchy aliases `cd` to a zoxide wrapper. Here `cd` stays `cd`, with `z` and `zi` for learned jumps. `o` runs `open .`,
 standing in for Omarchy's `Super+Shift+Alt+F`.
 
+Omarchy installs a minimal Starship config with only directory, git branch, git status, and the prompt character. Here
+Starship uses its built-in prompt, so the Python environment and other project modules appear when relevant. The
+[shell guide](shell.md) covers the prompt.
+
 ## Themes
 
 Omarchy picks a theme with `Super+Ctrl+Shift+Space` and re-themes the whole desktop. Here the [theme](theme.md) command
