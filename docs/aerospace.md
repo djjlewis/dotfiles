@@ -52,8 +52,26 @@ default 10-pixel split resize. The 100-pixel resize on `Command+Ctrl+Option+Shif
 
 Crossing banks takes focus with the window. Moving within a bank does not, because the window is still a digit away.
 
-New windows land in a fixed workspace for three apps: Ghostty in `W0`, Firefox in `P1`, and ChatGPT in `W4`. Add a rule
-with an `on-window-detected` block. `aerospace list-apps` prints the app IDs.
+New windows of these apps land in a fixed workspace:
+
+| Workspace | App                   |
+| --------- | --------------------- |
+| `P1`      | Firefox               |
+| `P2`      | Edge                  |
+| `P4`      | Outlook               |
+| `P5`      | Teams                 |
+| `P6`      | Microsoft 365 Copilot |
+| `P7`      | OneNote               |
+| `W0`      | Ghostty               |
+| `W1`      | Claude                |
+| `W2`      | ChatGPT               |
+| `W4`      | VS Code               |
+| `W9`      | PyCharm               |
+
+The list covers the work MacBook. A rule for an app that isn't installed never fires, so one config serves both
+machines. Add a rule with an `on-window-detected` block. `aerospace list-apps` prints the app IDs.
+
+ChatGPT and Codex share the app ID `com.openai.codex`, so the ChatGPT rule also matches on the app name.
 
 ## Launchers
 

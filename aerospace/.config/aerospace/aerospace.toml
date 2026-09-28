@@ -49,19 +49,64 @@ persistent-workspaces = [
 
 # --- App → Workspace rules ---
 # Find app IDs with: `aerospace list-apps` or `mdls -name kMDItemCFBundleIdentifier -r /Applications/App.app`
+# These are the work MacBook's apps. Rules for apps that are not installed
+# never match, so the personal MacBook's rules can be added alongside.
 
-[[on-window-detected]]
-if.app-id = 'com.mitchellh.ghostty'
-run = 'move-node-to-workspace W0'
-
+# Firefox
 [[on-window-detected]]
 if.app-id = 'org.mozilla.firefox'
 run = 'move-node-to-workspace P1'
 
-# ChatGPT → workspace W4
+# Edge
 [[on-window-detected]]
-if.app-id = 'com.openai.chat'
+if.app-id = 'com.microsoft.edgemac'
+run = 'move-node-to-workspace P2'
+
+# Outlook
+[[on-window-detected]]
+if.app-id = 'com.microsoft.Outlook'
+run = 'move-node-to-workspace P4'
+
+# Teams
+[[on-window-detected]]
+if.app-id = 'com.microsoft.teams2'
+run = 'move-node-to-workspace P5'
+
+# Microsoft 365 Copilot
+[[on-window-detected]]
+if.app-id = 'com.microsoft.m365copilot'
+run = 'move-node-to-workspace P6'
+
+# OneNote
+[[on-window-detected]]
+if.app-id = 'com.microsoft.onenote.mac'
+run = 'move-node-to-workspace P7'
+
+# Ghostty
+[[on-window-detected]]
+if.app-id = 'com.mitchellh.ghostty'
+run = 'move-node-to-workspace W0'
+
+# Claude
+[[on-window-detected]]
+if.app-id = 'com.anthropic.claudefordesktop'
+run = 'move-node-to-workspace W1'
+
+# ChatGPT shares its app ID with Codex, so the name tells them apart.
+[[on-window-detected]]
+if.app-id = 'com.openai.codex'
+if.app-name-regex-substring = '^ChatGPT$'
+run = 'move-node-to-workspace W2'
+
+# VS Code
+[[on-window-detected]]
+if.app-id = 'com.microsoft.VSCode'
 run = 'move-node-to-workspace W4'
+
+# PyCharm
+[[on-window-detected]]
+if.app-id = 'com.jetbrains.pycharm'
+run = 'move-node-to-workspace W9'
 
 # Possible values: (qwerty|dvorak|colemak)
 # See https://nikitabobko.github.io/AeroSpace/guide#key-mapping
