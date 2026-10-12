@@ -1,0 +1,10 @@
+# Homebrew upgrades with a triaged report first. brewnotes lives in
+# ~/projects/personal/release-notes-review. Machines without brew skip the function.
+
+if (( $+commands[brew] )); then
+    # bup shows what an upgrade would change, asks, upgrades, then saves the new
+    # versions as the snapshot the next `brewnotes recap` starts from.
+    bup() {
+        brewnotes preview && read -q "?Upgrade? [y/N] " && echo && brew upgrade && brewnotes recap --no-save
+    }
+fi
