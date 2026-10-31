@@ -1,27 +1,50 @@
 #!/usr/bin/env bash
-# Gathers the raw state behind the /whats-next briefing for the course platform
-# and the courses. Read-only: it never changes an issue, PR or checkout.
+# Gathers the raw state behind the /whats-next briefing for the djjlewis repos.
+# Read-only: it never changes an issue, PR or checkout.
 set -uo pipefail
 
 OWNER=djjlewis
 PROJECT=2
-REPOS=(course-platform learning-python)
-CHECKOUTS=("$HOME/projects/personal/course-platform" "$HOME/projects/personal/learning-python")
+# Repos opt in with this GitHub topic, so this public file names no private repo.
+TOPIC=whats-next
 
 # The repos are private to this account; don't depend on which gh account is active.
 GH_TOKEN="${GH_TOKEN:-$(gh auth token --user "$OWNER" 2>/dev/null)}"
 export GH_TOKEN
 
+# Filters on repositoryTopics because `gh repo list --topic` lags behind topic changes.
+REPOS=($(gh repo list "$OWNER" --limit 200 --json name,repositoryTopics \
+  --jq ".[] | select(any(.repositoryTopics[]?; .name==\"$TOPIC\")) | .name"))
+if [ ${#REPOS[@]} -eq 0 ]; then
+  echo "# no $OWNER repos have the $TOPIC topic (add it with: gh repo edit $OWNER/<repo> --add-topic $TOPIC)"
+  exit 1
+fi
+
+# Run inside a checkout or worktree of one of the repos, brief on that repo only.
+origin=$(git remote get-url origin 2>/dev/null)
+if [[ ${origin%.git} =~ [:/]$OWNER/([^/]+)$ ]] && [[ " ${REPOS[*]} " == *" ${BASH_REMATCH[1]} "* ]]; then
+  REPOS=("${BASH_REMATCH[1]}")
+fi
+
 echo "## FRONTIER (Now phase, ready-for-*, unblocked, unassigned)"
 echo "# repo#number | label | where | title"
-frontier=$(gh project item-list "$PROJECT" --owner "$OWNER" --limit 200 --format json \
-  --jq '.items[] | select(.phase=="Now" and .status!="Done" and .content.type=="Issue" and ((.labels // []) | any(startswith("ready-for-")))) | "\(.content.repository) \(.content.number)"' |
-while read -r repo number; do
+if ! items=$(gh project item-list "$PROJECT" --owner "$OWNER" --limit 200 --format json \
+  --jq '.items[] | select(.phase=="Now" and .status!="Done" and .content.type=="Issue" and ((.labels // []) | any(startswith("ready-for-")))) | "\(.content.repository) \(.content.number)"' 2>&1); then
+  # Without the board, every ready-for-agent issue still shows in the next section.
+  if [[ $items == *read:project* ]]; then
+    echo "# project $PROJECT skipped: the $OWNER gh token lacks the read:project scope"
+  else
+    echo "# project $PROJECT skipped: ${items%%$'\n'*}"
+  fi
+  items=""
+fi
+frontier=$([ -n "$items" ] && printf '%s\n' "$items" | while read -r repo number; do
+  [[ " ${REPOS[*]} " == *" ${repo#*/} "* ]] || continue
   gh api "repos/$repo/issues/$number" --jq '
     select(.state=="open" and (.assignees|length)==0 and (.issue_dependencies_summary.blocked_by // 0)==0)
     | "\(.repository_url|split("/")|last)#\(.number) | \(.labels|map(.name|select(startswith("ready-for-")))|join(",")) | \(if ((.body // "")|test("[Rr]uns in a local session")) then "local" else "cloud" end) | \(.title)"'
 done)
-echo "$frontier"
+[ -n "$frontier" ] && echo "$frontier"
 
 echo
 echo "## READY-FOR-AGENT NOT ON THE FRONTIER (later phase, or blocked)"
@@ -57,11 +80,12 @@ done
 
 echo
 echo "## LOCAL CHECKOUTS"
-for d in "${CHECKOUTS[@]}"; do
+for r in "${REPOS[@]}"; do
+  d="$HOME/projects/personal/$r"
   [ -d "$d/.git" ] || continue
   git -C "$d" fetch -q origin 2>/dev/null
   branch=$(git -C "$d" branch --show-current)
   dirty=$(git -C "$d" status --porcelain | wc -l | tr -d ' ')
-  merged=$(gh pr list -R "$OWNER/$(basename "$d")" --state merged --head "$branch" --json number --jq '.[0].number // empty' 2>/dev/null)
-  echo "$(basename "$d") | branch=$branch | uncommitted=$dirty | ${merged:+branch already merged as PR #$merged}"
+  merged=$(gh pr list -R "$OWNER/$r" --state merged --head "$branch" --json number --jq '.[0].number // empty' 2>/dev/null)
+  echo "$r | branch=$branch | uncommitted=$dirty | ${merged:+branch already merged as PR #$merged}"
 done
