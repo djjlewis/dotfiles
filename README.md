@@ -89,6 +89,7 @@ The setup follows the [Omarchy manual](https://omarchy.org/manual) where macOS a
 | aerospace     |   ✓   |       | Tiling window manager config and the workspace bank script         |
 | bash          |   ✓   |   ✓   | Fallback shell                                                     |
 | btop          |   ✓   |       | Points at the theme the `theme` command writes                     |
+| claude        |   ✓   |   ✓   | Claude Code user settings and personal skills                      |
 | ghostty       |   ✓   |   ✓   | Layout and keys shared with Linux                                  |
 | ghostty-macos |   ✓   |       | Mac font size, opacity, Option key, extra keys, and the launcher   |
 | git           |   ✓   |   ✓   | Aliases and diff-so-fancy. Identity lives in ignored include files |

@@ -21,7 +21,7 @@ groups=()
 # the old i3 desktop packages live in archive/linux/i3-desktop. theme is
 # macOS-only because on Omarchy it would write a colourscheme into Omarchy's
 # Neovim config.
-common_targets=(ghostty bash git tmux zsh)
+common_targets=(ghostty bash claude git tmux zsh)
 macos_targets=(aerospace btop ghostty-macos mac-bin nvim theme)
 linux_targets=()
 stow_targets=()
