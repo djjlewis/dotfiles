@@ -1,5 +1,6 @@
 {
   "model": "opus",
+  "effortLevel": "high",
   "extraKnownMarketplaces": {
     "claude-plugins-official": {
       "source": {
@@ -8,13 +9,14 @@
       }
     }
   },
-  "effortLevel": "high",
+  "enabledPlugins": {
+    "swift-lsp@claude-plugins-official": true
+  },
   "tui": "fullscreen",
   "voice": {
     "enabled": true,
     "mode": "tap"
   },
   "theme": "dark",
-  "agentPushNotifEnabled": true,
-  "voiceEnabled": true
+  "agentPushNotifEnabled": true
 }
